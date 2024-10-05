@@ -2,7 +2,10 @@ package com.kh.fa.restcontroller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -11,11 +14,14 @@ import com.kh.fa.dao.MemberDao;
 import com.kh.fa.dto.MemberDto;
 import com.kh.fa.error.TargetNotFoundException;
 import com.kh.fa.service.TokenService;
+import com.kh.fa.vo.MemberBlockRequestVO;
+import com.kh.fa.vo.MemberBlockResponseVO;
 import com.kh.fa.vo.MemberClaimVO;
 import com.kh.fa.vo.MemberComplexRequestVO;
 import com.kh.fa.vo.MemberComplexResponseVO;
 import com.kh.fa.vo.MemberLoginRequestVO;
 import com.kh.fa.vo.MemberLoginResponseVO;
+import com.kh.fa.vo.MypageVO;
 
 @RestController
 @RequestMapping("/member")
@@ -71,6 +77,8 @@ public class MemberRestController {
 			claimVO.setMemberLevel(memberDto.getMemberLevel());
 			response.setAccessToken(tokenService.create(claimVO)); // 액세스토큰
 			
+			memberDao.updateMemberLogin(memberDto.getMemberId()); // 최종 로그인 시각 갱신
+			
 			return response;
 		}
 		else { // 로그인 실패
@@ -78,6 +86,44 @@ public class MemberRestController {
 		}
 	}
 	
+	// 차단 목록 검색
+	@PostMapping("/block")
+	public MemberBlockResponseVO block(@RequestBody MemberBlockRequestVO vo) {
+		int count = memberDao.countWithPaging(vo);
+		boolean last = vo.getEndRow() == null || count <= vo.getEndRow();
+		MemberBlockResponseVO response = new MemberBlockResponseVO();
+		response.setMemberBlockList(memberDao.selectListByPaging(vo));
+		response.setCount(count);
+		response.setLast(last);
+		return response;
+	}
 	
+	// 마이페이지
+	@GetMapping("/{memberId}")
+	public MypageVO detail(@PathVariable String memberId) {
+		MypageVO response = new MypageVO();
+		MemberDto memberDto = memberDao.selectOne(memberId);
+		if(memberDto == null) throw new TargetNotFoundException();
+//		BlockDto blockDto = blockDao.selectOne(memberId);
+//		ProductDto productDto = productDao.selectOne(memberId); 
+//		if(productDto == null) throw new TargetNotFoundException();
+		response.setMemberDto(memberDto);
+//		response.setBlockDto(blockDto);
+//		response.setProductDto(productDto);
+		return response;
+	}
+	
+	// 개인정보 변경
+	@PutMapping("/edit")
+	public void edit(@RequestBody MemberDto memberDto) {
+		boolean result = memberDao.update(memberDto);
+		if(result == false) throw new TargetNotFoundException();
+	}
+	
+	
+	// 회원 탈퇴 : 넷 다 비밀번호 받는 걸 어떻게 결정할지부터가 우선되어야 함
+	// 비밀번호 변경
+	// 비밀번호 찾기
+	// 비밀번호 재설정
 	
 }
