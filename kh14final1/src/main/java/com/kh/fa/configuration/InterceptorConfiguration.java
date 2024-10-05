@@ -15,7 +15,7 @@ import com.kh.fa.interceptor.TestInterceptor;
 @COnfiguration으로 등록 후 필요하다면 상속을 받아서 자격을 획득해야함
 */
 
-@Configuration
+//@Configuration
 public class InterceptorConfiguration implements WebMvcConfigurer {
 	
 	@Autowired
