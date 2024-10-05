@@ -7,12 +7,9 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 @Data
-public class BlockDto {
-	private int blockNo;
-	private String blockOwner;
-	private String blockTarget;
-	private String blockType;
+public class CertDto {
+	private String certEmail;
+	private String certNumber;
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
-	private Date blockTime;
-	private String blockMemo;
+	private Date certTime;
 }
