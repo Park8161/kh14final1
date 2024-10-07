@@ -19,6 +19,8 @@ import io.jsonwebtoken.security.Keys;
 @Service
 public class TokenService {
 	
+	public static final String BEARER_PREFIX = "Bearer ";
+	
 	@Autowired
 	private TokenProperties tokenProperties;
 	
@@ -66,5 +68,17 @@ public class TokenService {
 		
 		return vo;
 	}
+	
+	// Bearer 토큰인지 검사하는 메소드
+	public boolean isBearerToken(String token) {
+		return token != null && token.startsWith(BEARER_PREFIX);
+	}	
+	
+	// Bearer를 제거하는 메소드
+	public String removeBearer(String token) {
+		// return token.substring(0,7);
+		// return token.substring(0, "Bearer ".length()); // 원하는 문자열의 길이만큼
+		return token.substring(0, BEARER_PREFIX.length()); // 문자열의 오타 방지를 위한 상수값 변환 후 대입
+	}	
 	
 }
