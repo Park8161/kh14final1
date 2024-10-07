@@ -9,8 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.kh.fa.dto.CertDto;
-import com.kh.fa.vo.CertCheckVO;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Repository
 public class CertDao {
 
@@ -32,8 +34,7 @@ public class CertDao {
 		map.put("certNumber", certDto.getCertNumber());
 		map.put("duration", duration);
 		List<CertDto> list = sqlSession.selectList("cert.check", map);
-		System.out.println("map : "+map);
-		System.out.println("list : "+list);
+//		log.debug("결과 수 : {}", list.size());
 		return list.size() > 0;
 	}	
 	

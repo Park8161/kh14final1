@@ -24,7 +24,7 @@
 		select * from cert 
 		where cert_email = #{certEmail} 
 		and cert_number = #{certNumber} 
-		and cert_time between sysdate-#{duration}/60/24 and sysdate
+		and cert_time between sysdate-${duration}/60/24 and sysdate
 	</select>
 	
 	<!-- 유효시간이 지난 인증번호를 삭제 -->
