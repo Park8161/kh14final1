@@ -16,7 +16,7 @@
 			attachment_type, attachment_size
 		)
 		values (
-			#{attachmentNo}, #{attachmentName},
+			attachment_seq.nextval, #{attachmentName},
 			#{attachmentType}, #{attachmentSize}  
 		)
 	</insert>
