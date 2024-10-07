@@ -31,6 +31,7 @@ import com.kh.fa.vo.MemberCertVO;
 import com.kh.fa.vo.MemberClaimVO;
 import com.kh.fa.vo.MemberComplexRequestVO;
 import com.kh.fa.vo.MemberComplexResponseVO;
+import com.kh.fa.vo.MemberExitRequestVO;
 import com.kh.fa.vo.MemberLoginRequestVO;
 import com.kh.fa.vo.MemberLoginResponseVO;
 import com.kh.fa.vo.MypageVO;
@@ -204,8 +205,7 @@ public class MemberRestController {
 	
 	// 비밀번호 변경
 	@GetMapping("/memberId/{memberId}/memberEmail/{memberEmail}")
-	public void findPw(@Parameter(required = true) @PathVariable String memberId,
-			@Parameter(required = true) @PathVariable String memberEmail) throws IOException, MessagingException {
+	public void findPw(@PathVariable String memberId, @PathVariable String memberEmail) throws IOException, MessagingException {
 		// 아이디로 회원 정보 조회
 		MemberDto memberDto = memberDao.selectOne(memberId);
 		if(memberDto == null) throw new TargetNotFoundException();
@@ -233,5 +233,34 @@ public class MemberRestController {
 		memberDao.updateMemberPw(memberDto);		
 	}
 	
-	// 회원 탈퇴 : 넷 다 비밀번호 받는 걸 어떻게 결정할지부터가 우선되어야 함
+	// 회원 가입
+	@PostMapping("/join")
+	public void join(@RequestBody MemberDto memberDto) {
+		memberDao.insert(memberDto);
+	}
+	
+	// 회원 탈퇴 : 리프레시 토큰과 비밀번호를 VO에 담아 전송
+	@PostMapping("/exit")
+	public void exit(@RequestHeader("Authorization") String refreshToken, @RequestBody MemberExitRequestVO exitVO) {
+		if(tokenService.isBearerToken(refreshToken) == false) throw new TargetNotFoundException("유효하지 않은 토큰");
+		MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(refreshToken));
+		
+		MemberDto memberDto = memberDao.selectOne(claimVO.getMemberId());
+		if(memberDto == null) throw new TargetNotFoundException("존재하지 않는 회원");
+		boolean isValid = exitVO.getMemberPw().equals(memberDto.getMemberPw());
+		if(isValid == false) throw new TargetNotFoundException("비밀번호 불일치");
+		
+		// 토큰 발급 내역을 조회
+		MemberTokenDto memberTokenDto = new MemberTokenDto();
+		memberTokenDto.setTokenTarget(claimVO.getMemberId());
+		memberTokenDto.setTokenValue(tokenService.removeBearer(refreshToken));
+		MemberTokenDto resultDto = memberTokenDao.selectOne(memberTokenDto);
+		if(resultDto == null) throw new TargetNotFoundException("발급 내역이 없음"); // 발급내역이 없음
+		
+		// 기존의 리프레시 토큰 삭제
+		memberTokenDao.delete(memberTokenDto);
+		
+		// 회원 정보 삭제
+		memberDao.delete(memberDto.getMemberId());		
+	}
 }

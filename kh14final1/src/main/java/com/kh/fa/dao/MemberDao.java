@@ -104,11 +104,11 @@ public class MemberDao {
 	public boolean updateMemberByAdmin(MemberDto memberDto) {
 		return sqlSession.update("member.editByAdmin", memberDto) > 0;
 	}
-	
-	
-	
-	
-	
+
+	// 회원 정보 삭제
+	public boolean delete(String memberId) {
+		return sqlSession.delete("member.remove", memberId) > 0;
+	}
 	
 	
 	
