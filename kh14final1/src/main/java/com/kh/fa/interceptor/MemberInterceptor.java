@@ -39,7 +39,7 @@ public class MemberInterceptor implements HandlerInterceptor {
 		// (4) 이 중 하나라도 일치하지 않는다면 정상적인 로그인이 아니라고 간주
 		try {
 			String token = request.getHeader("Authorization"); // 헤더의 Authorization을 읽어
-			if(token == null) throw new TargetNotFoundException("헤더 없음"); // (1)
+			if(token == null) throw new Exception("헤더 없음"); // (1)
 			if(tokenService.isBearerToken(token) == false) throw new Exception("Bearer 토큰이 아님"); // (2)
 			String realToken = tokenService.removeBearer(token); // Bearer 제거
 			MemberClaimVO claimVO = tokenService.check(realToken); // (3)
