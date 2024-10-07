@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.kh.fa.error.TargetNotFoundException;
 
+import io.jsonwebtoken.ExpiredJwtException;
+
 // 스프링 부트에서 발생하는 각종 예외들을 처리하는 간섭 객체
 //@RestControllerAdvice(basePackages = {"com.kh.spring12.restcontroller"})
 @RestControllerAdvice(annotations = {RestController.class})
@@ -29,6 +31,12 @@ public class ExceptionAdvice {
 		// return ResponseEntity.status(500).build(); // 500
 		// return ResponseEntity.internalServerError().build(); // 500
 		return ResponseEntity.internalServerError().body("server error");
+	}
+	
+	@ExceptionHandler(ExpiredJwtException.class)
+	public ResponseEntity<String> errorTokenExpire(Exception e) {
+		e.printStackTrace();
+		return ResponseEntity.status(404).body("token expired");
 	}
 	
 }

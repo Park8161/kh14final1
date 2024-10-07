@@ -33,6 +33,7 @@ import com.kh.fa.vo.MemberLoginRequestVO;
 import com.kh.fa.vo.MemberLoginResponseVO;
 import com.kh.fa.vo.MypageVO;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.mail.MessagingException;
 
@@ -158,19 +159,33 @@ public class MemberRestController {
 	}
 	
 	// 마이페이지
-	@GetMapping("/{memberId}")
-	public MypageVO detail(@PathVariable String memberId) {
-		MypageVO response = new MypageVO();
-		MemberDto memberDto = memberDao.selectOne(memberId);
-		if(memberDto == null) throw new TargetNotFoundException();
-//		BlockDto blockDto = blockDao.selectOne(memberId);
-//		ProductDto productDto = productDao.selectOne(memberId); 
-//		if(productDto == null) throw new TargetNotFoundException();
-		response.setMemberDto(memberDto);
-//		response.setBlockDto(blockDto);
-//		response.setProductDto(productDto);
-		return response;
+	@GetMapping("/mypage")
+	public MemberDto find(@RequestHeader("Authorization") String accessToken) {
+		if(tokenService.isBearerToken(accessToken) == false) throw new TargetNotFoundException("유효하지 않은 토큰");
+		MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(accessToken));
+		
+		MemberDto memberDto = memberDao.selectOne(claimVO.getMemberId());
+		if(memberDto == null) throw new TargetNotFoundException("존재하지 않는 회원");
+		
+		memberDto.setMemberPw(null);//비밀번호 제거
+		
+		return memberDto;
 	}
+	
+	// 마이페이지 - 다른 회원 정보 조회를 위해 남겨둠
+//	@GetMapping("/{memberId}")
+//	public MypageVO detail(@PathVariable String memberId) {
+//		MypageVO response = new MypageVO();
+//		MemberDto memberDto = memberDao.selectOne(memberId);
+//		if(memberDto == null) throw new TargetNotFoundException();
+////		BlockDto blockDto = blockDao.selectOne(memberId);
+////		ProductDto productDto = productDao.selectOne(memberId); 
+////		if(productDto == null) throw new TargetNotFoundException();
+//		response.setMemberDto(memberDto);
+////		response.setBlockDto(blockDto);
+////		response.setProductDto(productDto);
+//		return response;
+//	}
 	
 	// 개인정보 변경
 	@PutMapping("/edit")
