@@ -160,7 +160,7 @@ public class MemberRestController {
 	
 	// 마이페이지
 	@GetMapping("/mypage")
-	public MemberDto find(@RequestHeader("Authorization") String accessToken) {
+	public MemberDto mypage(@RequestHeader("Authorization") String accessToken) {
 		if(tokenService.isBearerToken(accessToken) == false) throw new TargetNotFoundException("유효하지 않은 토큰");
 		MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(accessToken));
 		
