@@ -17,9 +17,11 @@ import com.kh.fa.configuration.CustomCertProperties;
 import com.kh.fa.dao.CertDao;
 import com.kh.fa.dao.MemberDao;
 import com.kh.fa.dao.MemberTokenDao;
+import com.kh.fa.dto.BlockDto;
 import com.kh.fa.dto.CertDto;
 import com.kh.fa.dto.MemberDto;
 import com.kh.fa.dto.MemberTokenDto;
+import com.kh.fa.dto.ProductDto;
 import com.kh.fa.error.TargetNotFoundException;
 import com.kh.fa.service.EmailService;
 import com.kh.fa.service.TokenService;
@@ -158,18 +160,24 @@ public class MemberRestController {
 		return response;
 	}
 	
-	// 마이페이지
+	// 마이페이지 - 회원 정보 뿐만 아니라 거래 이력 및 차단 목록 등의 조회를 위하여 Dto가 아닌 VO를 전송
 	@GetMapping("/mypage")
-	public MemberDto mypage(@RequestHeader("Authorization") String accessToken) {
+	public MypageVO mypage(@RequestHeader("Authorization") String accessToken) {
 		if(tokenService.isBearerToken(accessToken) == false) throw new TargetNotFoundException("유효하지 않은 토큰");
 		MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(accessToken));
 		
 		MemberDto memberDto = memberDao.selectOne(claimVO.getMemberId());
 		if(memberDto == null) throw new TargetNotFoundException("존재하지 않는 회원");
+		memberDto.setMemberPw(null); // 비밀번호 제거
+//		BlockDto blockDto = blockDao.selectOne(claimVO.getMemberId());
+//		ProductDto productDto = productDao.selectOne(claimVO.getMemberId()); 
+//		if(productDto == null) throw new TargetNotFoundException("존재하지 않는 상품");
 		
-		memberDto.setMemberPw(null);//비밀번호 제거
-		
-		return memberDto;
+		MypageVO response = new MypageVO();
+		response.setMemberDto(memberDto);
+//		response.setBlockDto(blockDto);
+//		response.setProductDto(productDto);
+		return response;
 	}
 	
 	// 마이페이지 - 다른 회원 정보 조회를 위해 남겨둠
@@ -178,12 +186,12 @@ public class MemberRestController {
 //		MypageVO response = new MypageVO();
 //		MemberDto memberDto = memberDao.selectOne(memberId);
 //		if(memberDto == null) throw new TargetNotFoundException();
-////		BlockDto blockDto = blockDao.selectOne(memberId);
-////		ProductDto productDto = productDao.selectOne(memberId); 
-////		if(productDto == null) throw new TargetNotFoundException();
+//		BlockDto blockDto = blockDao.selectOne(memberId);
+//		ProductDto productDto = productDao.selectOne(memberId); 
+//		if(productDto == null) throw new TargetNotFoundException();
 //		response.setMemberDto(memberDto);
-////		response.setBlockDto(blockDto);
-////		response.setProductDto(productDto);
+//		response.setBlockDto(blockDto);
+//		response.setProductDto(productDto);
 //		return response;
 //	}
 	
