@@ -3,8 +3,11 @@ package com.kh.fa.configuration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 
 @Configuration
 public class SpringdocConfiguration {
@@ -27,7 +30,24 @@ public class SpringdocConfiguration {
 		// OpenAPI api = new OpenAPI();
 		// api.setInfo(info);
 		// return api;
-		return new OpenAPI().info(info);
+
+		// (+추가) 
+		// - JWT 인증방식을 변경했기 때문에 해당 기능들을 문서에서 사용할 수 없다
+		// - 이를 해결하기 위해서 문서에도 JWT 인증버튼을 추가할 예정
+		String jwtName = "Authorization";
+		SecurityRequirement requirement = new SecurityRequirement();
+		requirement.addList(jwtName);
+		
+		Components components = new Components()
+									.addSecuritySchemes(
+										jwtName,
+										new SecurityScheme()
+											.name(jwtName)
+											.type(SecurityScheme.Type.HTTP)
+											.scheme("bearer")
+									);
+		
+		return new OpenAPI().info(info).addSecurityItem(requirement).components(components);
 	}
 	
 }
