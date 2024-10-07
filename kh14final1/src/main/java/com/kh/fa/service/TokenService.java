@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.kh.fa.configuration.TokenProperties;
+import com.kh.fa.dao.MemberTokenDao;
+import com.kh.fa.dto.MemberTokenDto;
 import com.kh.fa.vo.MemberClaimVO;
 
 import io.jsonwebtoken.Claims;
@@ -23,9 +25,11 @@ public class TokenService {
 	
 	@Autowired
 	private TokenProperties tokenProperties;
+	@Autowired
+	private MemberTokenDao memberTokenDao;
 	
 	// 토큰 생성 메소드
-	public String create(MemberClaimVO vo) {
+	public String createAccessToken(MemberClaimVO vo) {
 		// 키 생성
 		SecretKey key = Keys.hmacShaKeyFor(tokenProperties.getSecret().getBytes(StandardCharsets.UTF_8));
 		
@@ -80,5 +84,38 @@ public class TokenService {
 		// return token.substring(0, "Bearer ".length()); // 원하는 문자열의 길이만큼
 		return token.substring(0, BEARER_PREFIX.length()); // 문자열의 오타 방지를 위한 상수값 변환 후 대입
 	}	
+	
+	// 리프레시 토큰 생성 메소드
+	// - 긴 시간 동안 사용할 수 있도록 처리
+	// - DB에 이 토큰의 정보를 저장해서 나중에 비교가 가능하도록 처리
+	public String createRefreshToken(MemberClaimVO vo) {
+		// 키 생성
+		SecretKey key = Keys.hmacShaKeyFor(tokenProperties.getSecret().getBytes(StandardCharsets.UTF_8));
+		
+		// 만료시간 계산
+		Calendar c = Calendar.getInstance(); // 현재 시간 추출
+		Date now = c.getTime(); // 현재 시간을 now로 지칭
+		c.add(Calendar.MONTH, 1); // 설정한 만료시간 후 만료, 이 숫자는 거의 바꿀 일이 없어 그냥 넣어주어도 괜찮다
+		Date limit = c.getTime(); // 만료 설정을 limit로 지칭
+		
+		// 토큰
+		String token = Jwts.builder()
+							// 정보 설정
+							.signWith(key) // 서명에 사용할 키 정보
+							.expiration(limit) // 만료 시간 설정(java.util.Date)
+							.issuer(tokenProperties.getIssuer()) // 발급자 정보(issuer) issuer는 보통 발급사를 지칭
+							.issuedAt(now)
+							.claim("memberId", vo.getMemberId())
+							.claim("memberLevel", vo.getMemberLevel())
+						.compact();
+		
+		// DB 저장
+		MemberTokenDto memberTokenDto = new MemberTokenDto();
+		memberTokenDto.setTokenTarget(vo.getMemberId());
+		memberTokenDto.setTokenValue(token);
+		memberTokenDao.insert(memberTokenDto);
+		
+		return token;
+	}
 	
 }

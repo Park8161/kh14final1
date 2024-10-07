@@ -9,14 +9,17 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kh.fa.configuration.CustomCertProperties;
 import com.kh.fa.dao.CertDao;
 import com.kh.fa.dao.MemberDao;
+import com.kh.fa.dao.MemberTokenDao;
 import com.kh.fa.dto.CertDto;
 import com.kh.fa.dto.MemberDto;
+import com.kh.fa.dto.MemberTokenDto;
 import com.kh.fa.error.TargetNotFoundException;
 import com.kh.fa.service.EmailService;
 import com.kh.fa.service.TokenService;
@@ -48,6 +51,8 @@ public class MemberRestController {
 	private CertDao certDao;
 	@Autowired
 	private CustomCertProperties customCertProperties;
+	@Autowired
+	private MemberTokenDao memberTokenDao;
 	
 	// 여태까지 배운대로라면 복합검색도 GET으로 구현해야 한다
 	// 하지만 보내야 하는 데이터가 너무 많아서 GET으로 구현하는 것은 어려움이 있다
@@ -91,7 +96,8 @@ public class MemberRestController {
 			MemberClaimVO claimVO = new MemberClaimVO(); // 아이디
 			claimVO.setMemberId(memberDto.getMemberId()); // 등급
 			claimVO.setMemberLevel(memberDto.getMemberLevel());
-			response.setAccessToken(tokenService.create(claimVO)); // 액세스토큰
+			response.setAccessToken(tokenService.createAccessToken(claimVO)); // 액세스토큰
+			response.setRefreshToken(tokenService.createRefreshToken(claimVO)); // 리프레시토큰
 			
 			memberDao.updateMemberLogin(memberDto.getMemberId()); // 최종 로그인 시각 갱신
 			
@@ -100,6 +106,43 @@ public class MemberRestController {
 		else { // 로그인 실패
 			throw new TargetNotFoundException("ㅎㅎ");
 		}
+	}
+	
+	// (+추가) 
+	// - Refresh Token으로 로그인 하는 기능
+	// - 보안이 매우 취약한 기능이므로 보안을 올리기 위해 각종 장치를 추가
+	// - DB검증 등...
+	// - Authorization이라는 헤더에 있는 값을 읽어서 검사한 뒤 갱신 처리
+	// - 검증할 수 없는 토큰 또는 기타 오류 발생 시 404 처리 
+	@PostMapping("/refresh")
+	public MemberLoginResponseVO refresh(@RequestHeader("Authorization") String refreshToken) {
+		// [1] refreshToken이 없거나 Bearer로 시작하지 않으면 안됨
+		if(refreshToken == null) throw new TargetNotFoundException("토큰 없음");
+		if(tokenService.isBearerToken(refreshToken) == false) throw new TargetNotFoundException("Bearer 토큰 아님");
+		
+		// [2] 토큰에서 정보를 추출
+		MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(refreshToken)); // Bearer 제거한 토큰을 이용해 유효 검사 및 회원 정보 조회
+		if(claimVO.getMemberId() == null) throw new TargetNotFoundException("아이디 없음");
+		if(claimVO.getMemberLevel() == null) throw new TargetNotFoundException("등급 없음");
+		
+		// [3] 토큰 발급 내역을 조회
+		MemberTokenDto memberTokenDto = new MemberTokenDto();
+		memberTokenDto.setTokenTarget(claimVO.getMemberId());
+		memberTokenDto.setTokenValue(tokenService.removeBearer(refreshToken));
+		MemberTokenDto resultDto = memberTokenDao.selectOne(memberTokenDto);
+		if(resultDto == null) throw new TargetNotFoundException("발급 내역이 없음"); // 발급내역이 없음
+		
+		// [4] 기존의 리프레시 토큰 삭제
+		memberTokenDao.delete(memberTokenDto);
+		
+		// [5] 로그인 정보 재발급
+		MemberLoginResponseVO response = new MemberLoginResponseVO();
+		response.setMemberId(claimVO.getMemberId());
+		response.setMemberLevel(claimVO.getMemberLevel());
+		response.setAccessToken(tokenService.createAccessToken(claimVO)); // 액세스토큰 재발급
+		response.setRefreshToken(tokenService.createRefreshToken(claimVO)); // 리프레시토큰 재발급
+		
+		return response;
 	}
 	
 	// 차단 목록 검색
