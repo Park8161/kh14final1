@@ -24,7 +24,8 @@ public class MemberTokenDao {
 		return sqlSession.delete("memberToken.delete", memberTokenDto) > 0;
 	}
 	
-	
-	
+	public boolean clean(int minute) {
+		return sqlSession.delete("memberToken.clean", minute) > 0;
+	}	
 	
 }

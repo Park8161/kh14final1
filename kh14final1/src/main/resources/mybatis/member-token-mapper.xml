@@ -23,5 +23,11 @@
 	<delete id="delete">
 		delete member_token where token_target = #{tokenTarget} and token_value = #{tokenValue}
 	</delete>
+
+	<delete id="clean">
+	<![CDATA[
+		delete member_token where token_time < sysdate-${minute}/24/60
+	]]>
+	</delete>	
 	
 </mapper>

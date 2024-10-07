@@ -1,12 +1,14 @@
 package com.kh.fa.service;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.Date;
 
 import javax.crypto.SecretKey;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.kh.fa.configuration.TokenProperties;
@@ -80,9 +82,9 @@ public class TokenService {
 	
 	// Bearer를 제거하는 메소드
 	public String removeBearer(String token) {
-		// return token.substring(0,7);
-		// return token.substring(0, "Bearer ".length()); // 원하는 문자열의 길이만큼
-		return token.substring(0, BEARER_PREFIX.length()); // 문자열의 오타 방지를 위한 상수값 변환 후 대입
+		// return token.substring(7);
+		// return token.substring("Bearer ".length()); // 원하는 문자열의 길이만큼
+		return token.substring(BEARER_PREFIX.length()); // 문자열의 오타 방지를 위한 상수값 변환 후 대입
 	}	
 	
 	// 리프레시 토큰 생성 메소드
@@ -117,5 +119,12 @@ public class TokenService {
 		
 		return token;
 	}
+	
+	// 매일 자정에 등록된지 한달이 지난 데이터들을 모두 삭제하는 기능
+	@Scheduled(cron = "0 0 0 * * *")
+	public void clean() {
+		System.out.println("청소시작! "+LocalDateTime.now());
+		memberTokenDao.clean(43200); // 만료 시간이 지난 데이터 모두 삭제, 분 단위
+	}		
 	
 }

@@ -13,7 +13,7 @@ import com.kh.fa.interceptor.MemberInterceptor;
 @COnfiguration으로 등록 후 필요하다면 상속을 받아서 자격을 획득해야함
 */
 
-//@Configuration
+@Configuration
 public class InterceptorConfiguration implements WebMvcConfigurer {
 	
 	@Autowired
@@ -35,31 +35,31 @@ public class InterceptorConfiguration implements WebMvcConfigurer {
 		// - 와일드카드가 2개면 하위 엔드포인트(/)를 모두 포함하는 범위에서 적용
 		
 		// 회원 검사 인터셉터 설정
-		registry.addInterceptor(memberInterceptor)
-				.addPathPatterns( // 접속불가
-				//"/admin/**", // 모든 관리자 페이지
-				//"/emp/**", // 모든 사원 페이지
-				//"/book/**", // 모든 도서 페이지
-				"/member/**", // 모든 회원 페이지
-				"/board/**", // 게시판 페이지
-				"/rest/board/**", // 게시글 REST 서비스
-				"/rest/member/profile", // 프로필 변경 서비스
-				"/rest/reply/**" // 댓글 페이지
-				) // 해당 설정은 화이트 리스트 방식
-				.excludePathPatterns( // 접속가능
-				"/member/join*", // 가입 관련 페이지				
-				"/member/login", // 로그인 페이지
-				"/member/goodbye", // 탈퇴 완료 페이지	
-				"/member/block", // 차단 페이지
-				"/member/findPw*",
-				"/member/resetPw*",
-				"/board/list", // 게시글 목록
-				"/board/detail", // 게시글 상세
-				"/member/image", // 회원 프로필 이미지는 로그인 안해도 볼 수 있도록 조정
-				"/rest/board/check", // 좋아요 확인 페이지
-				"/rest/reply/list", // 댓글 확인 페이지
-				"/rest/reply/list/paging" // 댓글 확인 페이지
-				);
+//		registry.addInterceptor(memberInterceptor)
+//				.addPathPatterns( // 접속불가
+//				//"/admin/**", // 모든 관리자 페이지
+//				//"/emp/**", // 모든 사원 페이지
+//				//"/book/**", // 모든 도서 페이지
+//				"/member/**", // 모든 회원 페이지
+//				"/board/**", // 게시판 페이지
+//				"/rest/board/**", // 게시글 REST 서비스
+//				"/rest/member/profile", // 프로필 변경 서비스
+//				"/rest/reply/**" // 댓글 페이지
+//				) // 해당 설정은 화이트 리스트 방식
+//				.excludePathPatterns( // 접속가능
+//				"/member/join*", // 가입 관련 페이지				
+//				"/member/login", // 로그인 페이지
+//				"/member/goodbye", // 탈퇴 완료 페이지	
+//				"/member/block", // 차단 페이지
+//				"/member/findPw*",
+//				"/member/resetPw*",
+//				"/board/list", // 게시글 목록
+//				"/board/detail", // 게시글 상세
+//				"/member/image", // 회원 프로필 이미지는 로그인 안해도 볼 수 있도록 조정
+//				"/rest/board/check", // 좋아요 확인 페이지
+//				"/rest/reply/list", // 댓글 확인 페이지
+//				"/rest/reply/list/paging" // 댓글 확인 페이지
+//				);
 		
 		// 다 막아놓고 일부 허용 : 화이트리스트 방식
 		// 다 허용해놓고 일부 막음 : 블랙리스트 방식
