@@ -80,6 +80,34 @@ public class MemberDao {
 		return sqlSession.update("member.login", memberId) > 0;
 	}
 	
+	// 등록(회원가입)
+	public void insert(MemberDto memberDto) {
+		// 비밀번호 암호화
+		String rawPw = memberDto.getMemberPw(); // 비밀번호 암호화 안된 것
+		String encPw = encoder.encode(rawPw); // 암호화된 비밀번호
+		memberDto.setMemberPw(encPw);
+		
+		sqlSession.insert("member.add", memberDto);		
+	}
+	
+	// 비밀번호 변경
+	public boolean updateMemberPw(MemberDto memberDto) {
+		//비밀번호 암호화
+		String rawPw = memberDto.getMemberPw(); // 비밀번호 암호화 안된 것
+		String encPw = encoder.encode(rawPw); // 암호화된 비밀번호
+		memberDto.setMemberPw(encPw);
+		
+		return sqlSession.update("member.editPw", memberDto) > 0;
+	}
+	
+	// 회원 정보 수정 by 관리자
+	public boolean updateMemberByAdmin(MemberDto memberDto) {
+		return sqlSession.update("member.editByAdmin", memberDto) > 0;
+	}
+	
+	
+	
+	
 	
 	
 	

@@ -328,6 +328,17 @@
 		where member_id = #{memberId}  
 	</update>
 	
+	<!-- 수정 by 관리자 -->
+	<update id="editByAdmin">
+		update member
+		set member_name = #{memberName}, member_level = #{memberLevel},
+			member_email = #{memberEmail}, member_post = #{memberPost},
+			member_address1 = #{memberAddress1}, member_address2 = #{memberAddress2}, 
+			member_contact = #{memberContact}, member_birth = #{memberBirth},
+			member_point = #{memberPoint}
+		where member_id = #{memberId}  
+	</update>
+	
 	<!-- 최종 로그인 시각 갱신 -->
 	<update id="login">
 		update member set member_login = sysdate where member_id = #{memberId}

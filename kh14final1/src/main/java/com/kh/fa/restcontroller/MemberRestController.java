@@ -1,5 +1,7 @@
 package com.kh.fa.restcontroller;
 
+import java.io.IOException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,18 +12,26 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.kh.fa.configuration.CustomCertProperties;
+import com.kh.fa.dao.CertDao;
 import com.kh.fa.dao.MemberDao;
+import com.kh.fa.dto.CertDto;
 import com.kh.fa.dto.MemberDto;
 import com.kh.fa.error.TargetNotFoundException;
+import com.kh.fa.service.EmailService;
 import com.kh.fa.service.TokenService;
 import com.kh.fa.vo.MemberBlockRequestVO;
 import com.kh.fa.vo.MemberBlockResponseVO;
+import com.kh.fa.vo.MemberCertVO;
 import com.kh.fa.vo.MemberClaimVO;
 import com.kh.fa.vo.MemberComplexRequestVO;
 import com.kh.fa.vo.MemberComplexResponseVO;
 import com.kh.fa.vo.MemberLoginRequestVO;
 import com.kh.fa.vo.MemberLoginResponseVO;
 import com.kh.fa.vo.MypageVO;
+
+import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.mail.MessagingException;
 
 @RestController
 @RequestMapping("/member")
@@ -32,6 +42,12 @@ public class MemberRestController {
 	private MemberDao memberDao;
 	@Autowired
 	private TokenService tokenService;
+	@Autowired
+	private EmailService emailService;
+	@Autowired
+	private CertDao certDao;
+	@Autowired
+	private CustomCertProperties customCertProperties;
 	
 	// 여태까지 배운대로라면 복합검색도 GET으로 구현해야 한다
 	// 하지만 보내야 하는 데이터가 너무 많아서 GET으로 구현하는 것은 어려움이 있다
@@ -120,10 +136,36 @@ public class MemberRestController {
 		if(result == false) throw new TargetNotFoundException();
 	}
 	
+	// 비밀번호 변경
+	@GetMapping("/memberId/{memberId}/memberEmail/{memberEmail}")
+	public void findPw(@Parameter(required = true) @PathVariable String memberId,
+			@Parameter(required = true) @PathVariable String memberEmail) throws IOException, MessagingException {
+		// 아이디로 회원 정보 조회
+		MemberDto memberDto = memberDao.selectOne(memberId);
+		if(memberDto == null) throw new TargetNotFoundException();
+		
+		// 이메일 비교
+		if(!memberEmail.equals(memberDto.getMemberEmail()))
+			throw new TargetNotFoundException();
+		
+		// 템플릿을 불러와 재설정 메일 발송
+		emailService.sendResetPw(memberId, memberEmail);
+	}
+	
+	// 비밀번호 재설정
+	@PostMapping("/resetPw")
+	public void resetPw(@RequestBody MemberCertVO memberCertVO) {
+		CertDto certDto = memberCertVO.getCertDto();
+		MemberDto memberDto = memberCertVO.getMemberDto();
+		// 인증 정보 확인
+		boolean isValid = certDao.check(certDto, customCertProperties.getExpire());
+		if(!isValid) throw new TargetNotFoundException("인증안됨");
+		//인증성공시 인증번호 삭제(1회접근페이지)
+		certDao.delete(certDto.getCertEmail());
+		
+		//비밀번호변경
+		memberDao.updateMemberPw(memberDto);		
+	}
 	
 	// 회원 탈퇴 : 넷 다 비밀번호 받는 걸 어떻게 결정할지부터가 우선되어야 함
-	// 비밀번호 변경
-	// 비밀번호 찾기
-	// 비밀번호 재설정
-	
 }
