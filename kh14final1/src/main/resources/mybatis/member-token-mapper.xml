@@ -23,6 +23,10 @@
 	<delete id="delete">
 		delete member_token where token_target = #{tokenTarget} and token_value = #{tokenValue}
 	</delete>
+	
+	<delete id="remove">
+		delete member_token where token_target = #{tokenTarget}
+	</delete>
 
 	<delete id="clean">
 	<![CDATA[

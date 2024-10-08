@@ -20,6 +20,11 @@ public class MemberTokenDao {
 		return sqlSession.selectOne("memberToken.check", memberTokenDto);
 	}
 	
+	// 회원 탈퇴용
+	public boolean remove(String memberId) {
+		return sqlSession.delete("memberToken.remove", memberId) > 0;
+	}
+	
 	public boolean delete(MemberTokenDto memberTokenDto) {
 		return sqlSession.delete("memberToken.delete", memberTokenDto) > 0;
 	}

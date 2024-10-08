@@ -345,7 +345,7 @@
 	</update>
 	
 	<!-- 비밀번호 변경 -->
-	<update id="editPw">
+	<update id="changePw">
 		update member set member_pw = #{memberPw} where member_id = #{memberId}
 	</update>
 	

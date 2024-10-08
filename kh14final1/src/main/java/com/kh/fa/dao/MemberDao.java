@@ -1,6 +1,8 @@
 package com.kh.fa.dao;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,13 +93,15 @@ public class MemberDao {
 	}
 	
 	// 비밀번호 변경
-	public boolean updateMemberPw(MemberDto memberDto) {
+	public boolean updateMemberPw(String memberId, String changePw) {
 		//비밀번호 암호화
-		String rawPw = memberDto.getMemberPw(); // 비밀번호 암호화 안된 것
+		String rawPw = changePw; // 비밀번호 암호화 안된 것
 		String encPw = encoder.encode(rawPw); // 암호화된 비밀번호
-		memberDto.setMemberPw(encPw);
+		Map<Object, Object> map = new HashMap<>();
+		map.put("memberId", memberId);
+		map.put("memberPw", encPw);
 		
-		return sqlSession.update("member.editPw", memberDto) > 0;
+		return sqlSession.update("member.changePw", map) > 0;
 	}
 	
 	// 회원 정보 수정 by 관리자

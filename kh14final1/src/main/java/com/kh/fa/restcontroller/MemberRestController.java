@@ -3,6 +3,7 @@ package com.kh.fa.restcontroller;
 import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,7 +28,8 @@ import com.kh.fa.service.EmailService;
 import com.kh.fa.service.TokenService;
 import com.kh.fa.vo.MemberBlockRequestVO;
 import com.kh.fa.vo.MemberBlockResponseVO;
-import com.kh.fa.vo.MemberCertVO;
+import com.kh.fa.vo.MemberFindPwVO;
+import com.kh.fa.vo.MemberChangePwVO;
 import com.kh.fa.vo.MemberClaimVO;
 import com.kh.fa.vo.MemberComplexRequestVO;
 import com.kh.fa.vo.MemberComplexResponseVO;
@@ -57,6 +59,8 @@ public class MemberRestController {
 	private CustomCertProperties customCertProperties;
 	@Autowired
 	private MemberTokenDao memberTokenDao;
+	@Autowired
+	private PasswordEncoder encoder;
 	
 	// 여태까지 배운대로라면 복합검색도 GET으로 구현해야 한다
 	// 하지만 보내야 하는 데이터가 너무 많아서 GET으로 구현하는 것은 어려움이 있다
@@ -86,8 +90,8 @@ public class MemberRestController {
 		if(memberDto == null) throw new TargetNotFoundException("아이디 없음");
 		
 		// 비밀번호 비교(암호화 여부에 따라 코드가 달라질 수 있음에 주의)
-		boolean isValid = vo.getMemberPw().equals(memberDto.getMemberPw());
-//		boolean isValid = encoder.matches(vo.getMemberPw(), memberDto.getMemberPw()); // 암호화시 사용
+//		boolean isValid = vo.getMemberPw().equals(memberDto.getMemberPw());
+		boolean isValid = encoder.matches(vo.getMemberPw(), memberDto.getMemberPw()); // 암호화시 사용
 		
 		if(isValid) { // 로그인 성공
 			MemberLoginResponseVO response = new MemberLoginResponseVO();
@@ -108,7 +112,7 @@ public class MemberRestController {
 			return response;
 		}
 		else { // 로그인 실패
-			throw new TargetNotFoundException("ㅎㅎ");
+			throw new TargetNotFoundException("로그인 실패");
 		}
 	}
 	
@@ -203,34 +207,64 @@ public class MemberRestController {
 		if(result == false) throw new TargetNotFoundException();
 	}
 	
-	// 비밀번호 변경
+	// 비밀번호 찾기를 위한 이메일 전송
 	@GetMapping("/memberId/{memberId}/memberEmail/{memberEmail}")
 	public void findPw(@PathVariable String memberId, @PathVariable String memberEmail) throws IOException, MessagingException {
 		// 아이디로 회원 정보 조회
 		MemberDto memberDto = memberDao.selectOne(memberId);
-		if(memberDto == null) throw new TargetNotFoundException();
+		if(memberDto == null) throw new TargetNotFoundException("아이디 정보 불일치");
 		
 		// 이메일 비교
 		if(!memberEmail.equals(memberDto.getMemberEmail()))
-			throw new TargetNotFoundException();
+			throw new TargetNotFoundException("이메일 정보 불일치");
 		
-		// 템플릿을 불러와 재설정 메일 발송
-		emailService.sendResetPw(memberId, memberEmail);
+		// 이메일로 인증번호 전송
+		emailService.sendCert(memberEmail);
 	}
 	
-	// 비밀번호 재설정
-	@PostMapping("/resetPw")
-	public void resetPw(@RequestBody MemberCertVO memberCertVO) {
-		CertDto certDto = memberCertVO.getCertDto();
-		MemberDto memberDto = memberCertVO.getMemberDto();
+	// 비밀번호 찾기 - 비로그인
+	@PostMapping("/findPw")
+	public void findPw(@RequestBody MemberFindPwVO findPwVO) {
 		// 인증 정보 확인
-		boolean isValid = certDao.check(certDto, customCertProperties.getExpire());
-		if(!isValid) throw new TargetNotFoundException("인증안됨");
+		CertDto certDto = findPwVO.getCertDto();
+		boolean isCertValid = certDao.check(certDto, customCertProperties.getExpire());
+		if(isCertValid == false) throw new TargetNotFoundException("FindPw : 인증 안됨");
 		//인증성공시 인증번호 삭제(1회접근페이지)
 		certDao.delete(certDto.getCertEmail());
 		
+		// 존재하는 아이디인지 확인
+		MemberDto memberDto = memberDao.selectOne(findPwVO.getMemberId());
+		if(memberDto == null) throw new TargetNotFoundException("FindPw : 존재하지 않는 회원 아이디");
+		
 		//비밀번호변경
-		memberDao.updateMemberPw(memberDto);		
+		memberDao.updateMemberPw(findPwVO.getMemberId(), findPwVO.getChangePw());		
+		
+	}
+	
+	// 비밀번호 변경 - 로그인 상태
+	@PostMapping("/changePw")
+	public void changePw(@RequestHeader("Authorization") String accessToken,
+						@RequestBody MemberChangePwVO changePwVO) {
+		if(tokenService.isBearerToken(accessToken) == false) throw new TargetNotFoundException("유효하지 않은 토큰");
+		MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(accessToken));
+		
+		MemberDto memberDto = memberDao.selectOne(claimVO.getMemberId());
+		if(memberDto == null) throw new TargetNotFoundException("존재하지 않는 회원");
+		
+		// 현재 비밀번호 일치 여부 확인
+//		boolean isPwValid = memberDto.getMemberPw().equals(changePwVO.getCurrentPw());
+		boolean isPwValid = encoder.matches(changePwVO.getCurrentPw(), memberDto.getMemberPw()); // 암호화시 사용
+		if(isPwValid == false) throw new TargetNotFoundException("변경 : 비밀번호 불일치");
+		
+//		// 인증 정보 확인
+//		CertDto certDto = memberCertVO.getCertDto();
+//		boolean isCertValid = certDao.check(certDto, customCertProperties.getExpire());
+//		if(isCertValid == false) throw new TargetNotFoundException("인증 안됨");
+//		//인증성공시 인증번호 삭제(1회접근페이지)
+//		certDao.delete(certDto.getCertEmail());
+		
+		//비밀번호변경
+		memberDao.updateMemberPw(claimVO.getMemberId(), changePwVO.getChangePw());		
 	}
 	
 	// 회원 가입
@@ -239,26 +273,19 @@ public class MemberRestController {
 		memberDao.insert(memberDto);
 	}
 	
-	// 회원 탈퇴 : 리프레시 토큰과 비밀번호를 VO에 담아 전송
+	// 회원 탈퇴 : 액세스 토큰과 비밀번호를 담은 VO 전송
 	@PostMapping("/exit")
-	public void exit(@RequestHeader("Authorization") String refreshToken, @RequestBody MemberExitRequestVO exitVO) {
-		if(tokenService.isBearerToken(refreshToken) == false) throw new TargetNotFoundException("유효하지 않은 토큰");
-		MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(refreshToken));
+	public void exit(@RequestHeader("Authorization") String accessToken, @RequestBody MemberExitRequestVO exitVO) {
+		if(tokenService.isBearerToken(accessToken) == false) throw new TargetNotFoundException("유효하지 않은 토큰");
+		MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(accessToken));
 		
 		MemberDto memberDto = memberDao.selectOne(claimVO.getMemberId());
 		if(memberDto == null) throw new TargetNotFoundException("존재하지 않는 회원");
 		boolean isValid = exitVO.getMemberPw().equals(memberDto.getMemberPw());
 		if(isValid == false) throw new TargetNotFoundException("비밀번호 불일치");
 		
-		// 토큰 발급 내역을 조회
-		MemberTokenDto memberTokenDto = new MemberTokenDto();
-		memberTokenDto.setTokenTarget(claimVO.getMemberId());
-		memberTokenDto.setTokenValue(tokenService.removeBearer(refreshToken));
-		MemberTokenDto resultDto = memberTokenDao.selectOne(memberTokenDto);
-		if(resultDto == null) throw new TargetNotFoundException("발급 내역이 없음"); // 발급내역이 없음
-		
 		// 기존의 리프레시 토큰 삭제
-		memberTokenDao.delete(memberTokenDto);
+		memberTokenDao.remove(claimVO.getMemberId());
 		
 		// 회원 정보 삭제
 		memberDao.delete(memberDto.getMemberId());		
