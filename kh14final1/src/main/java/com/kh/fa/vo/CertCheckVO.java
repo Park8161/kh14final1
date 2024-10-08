@@ -6,5 +6,5 @@ import lombok.Data;
 public class CertCheckVO {
 	private String certEmail;
 	private String certNumber;
-	private int duration;
+	private int duration; 
 }
