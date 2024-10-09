@@ -18,28 +18,24 @@ import com.kh.fa.configuration.CustomCertProperties;
 import com.kh.fa.dao.CertDao;
 import com.kh.fa.dao.MemberDao;
 import com.kh.fa.dao.MemberTokenDao;
-import com.kh.fa.dto.BlockDto;
 import com.kh.fa.dto.CertDto;
 import com.kh.fa.dto.MemberDto;
 import com.kh.fa.dto.MemberTokenDto;
-import com.kh.fa.dto.ProductDto;
 import com.kh.fa.error.TargetNotFoundException;
 import com.kh.fa.service.EmailService;
 import com.kh.fa.service.TokenService;
 import com.kh.fa.vo.MemberBlockRequestVO;
 import com.kh.fa.vo.MemberBlockResponseVO;
-import com.kh.fa.vo.MemberFindPwVO;
 import com.kh.fa.vo.MemberChangePwVO;
 import com.kh.fa.vo.MemberClaimVO;
 import com.kh.fa.vo.MemberComplexRequestVO;
 import com.kh.fa.vo.MemberComplexResponseVO;
 import com.kh.fa.vo.MemberExitRequestVO;
+import com.kh.fa.vo.MemberFindPwVO;
 import com.kh.fa.vo.MemberLoginRequestVO;
 import com.kh.fa.vo.MemberLoginResponseVO;
 import com.kh.fa.vo.MypageVO;
 
-import io.jsonwebtoken.ExpiredJwtException;
-import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.mail.MessagingException;
 
 @RestController
@@ -207,9 +203,9 @@ public class MemberRestController {
 		if(result == false) throw new TargetNotFoundException();
 	}
 	
-	// 비밀번호 찾기를 위한 이메일 전송
+	// 비밀번호 찾기를 위한 이메일 전송 - 비로그인
 	@GetMapping("/memberId/{memberId}/memberEmail/{memberEmail}")
-	public void findPw(@PathVariable String memberId, @PathVariable String memberEmail) throws IOException, MessagingException {
+	public boolean findPw(@PathVariable String memberId, @PathVariable String memberEmail) throws IOException, MessagingException {
 		// 아이디로 회원 정보 조회
 		MemberDto memberDto = memberDao.selectOne(memberId);
 		if(memberDto == null) throw new TargetNotFoundException("아이디 정보 불일치");
@@ -219,12 +215,14 @@ public class MemberRestController {
 			throw new TargetNotFoundException("이메일 정보 불일치");
 		
 		// 이메일로 인증번호 전송
-		emailService.sendCert(memberEmail);
+		emailService.sendResetPw(memberId, memberEmail);
+		
+		return memberDto != null && memberEmail.equals(memberDto.getMemberEmail());
 	}
 	
 	// 비밀번호 찾기 - 비로그인
-	@PostMapping("/findPw")
-	public void findPw(@RequestBody MemberFindPwVO findPwVO) {
+	@PostMapping("/resetPw")
+	public void resetPw(@RequestBody MemberFindPwVO findPwVO) {
 		// 인증 정보 확인
 		CertDto certDto = findPwVO.getCertDto();
 		boolean isCertValid = certDao.check(certDto, customCertProperties.getExpire());
@@ -273,6 +271,13 @@ public class MemberRestController {
 		memberDao.insert(memberDto);
 	}
 	
+	// 회원 가입 시 아이디 중복 검사
+	@GetMapping("/checkId/{memberId}")
+	public boolean checkId(@PathVariable String memberId) {
+		MemberDto memberDto = memberDao.selectOne(memberId);
+		return memberDto == null;
+	}
+	
 	// 회원 탈퇴 : 액세스 토큰과 비밀번호를 담은 VO 전송
 	@PostMapping("/exit")
 	public void exit(@RequestHeader("Authorization") String accessToken, @RequestBody MemberExitRequestVO exitVO) {
@@ -284,8 +289,8 @@ public class MemberRestController {
 		boolean isValid = exitVO.getMemberPw().equals(memberDto.getMemberPw());
 		if(isValid == false) throw new TargetNotFoundException("비밀번호 불일치");
 		
-		// 기존의 리프레시 토큰 삭제
-		memberTokenDao.remove(claimVO.getMemberId());
+		// 기존의 리프레시 토큰 삭제 - 안지워도 어차피 외래키 cascade라서 지워진다
+		// memberTokenDao.remove(claimVO.getMemberId());
 		
 		// 회원 정보 삭제
 		memberDao.delete(memberDto.getMemberId());		
