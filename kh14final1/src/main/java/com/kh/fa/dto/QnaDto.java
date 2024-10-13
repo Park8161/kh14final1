@@ -7,16 +7,16 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 @Data
-public class FaqDto {
-	private int faqNo;
-	private String faqWriter;
-	private String faqType;
-	private String faqTitle;
-	private String faqContent;
+public class QnaDto {
+	private int qnaNo;
+	private String qnaWriter;
+	private String qnaType;
+	private String qnaTitle;
+	private String qnaContent;
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
-	private Date faqWtime;
+	private Date qnaWtime;
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
-	private Date faqUtime;
-	private int faqViews;
-	private int faqReplies;
+	private Date qnaUtime;
+	private int qnaViews;
+	private int qnaReplies;
 }

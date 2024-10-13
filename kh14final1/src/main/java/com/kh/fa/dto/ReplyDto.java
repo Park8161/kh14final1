@@ -10,7 +10,7 @@ import lombok.Data;
 public class ReplyDto {
 	private int replyNo;
 	private String replyWriter;
-	private int replyFaq;
+	private int replyQna;
 	private String replyContent;
 	
 	// 프론트엔드로 전송할 때 (JSON으로 변환할 때) 시간도 포함되도록 설정
