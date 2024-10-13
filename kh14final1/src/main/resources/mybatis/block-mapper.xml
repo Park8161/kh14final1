@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="block">
+	
+	<!-- 차단 등록 -->
+	<insert id="insert">
+		insert into block(
+			block_no, block_owner, block_target,
+			block_type, block_memo
+		)
+		values(
+			block_seq.nextval, #{blockOwner}, #{blockTarget},
+			'차단', #{blockMemo}
+		)
+	</insert>
+	
+	<!-- 차단 해제 -->
+	<insert id="cancel">
+		insert into block(
+			block_no, block_owner, block_target,
+			block_type, block_memo
+		)
+		values(
+			block_seq.nextval, #{blockOwner}, #{blockTarget},
+			'해제', #{blockMemo}
+		)
+	</insert>
+	
+	<!-- 상대방의 마지막 차단/해제 상태 확인 -->
+	<select id="selectLastOne" resultType="blockDto">
+		select * from block where block_no = (
+			select max(block_no) from block 
+			where block_owner = #{blockOwner} 
+			and block_target = #{blockTarget}
+		)
+	</select>
+		
+	<!-- 특정 회원이 차단한 유저들 목록 -->
+	<select id="list" resultType="MemberBlockVO">
+		<!-- top-n-header -->
+		<include refid="top-n-header"></include>
+		
+		select * from block B
+		left outer join member M 
+		on B.block_target = M.member_id 
+		where B.block_owner = #{blockOwner}
+		<if test="column != null and keyword != null">
+			and instr(${column}, #{keyword}) > 0 
+		</if>
+		order by 
+		<if test="column != null and keyword != null">
+			${column} asc, 
+		</if>
+		B.block_no desc
+		
+		<!-- top-n-footer -->
+		<include refid="top-n-footer"></include>
+	</select>
+	
+	<!-- 특정 회원이 차단한 유저들 목록 카운트 -->
+	<select id="count" resultType="int">
+		select count(*) from block B
+		left outer join member M 
+		on B.block_target = M.member_id 
+		where B.block_owner = #{blockOwner}
+		<if test="column != null and keyword != null">
+			and instr(${column}, #{keyword}) > 0 
+		</if>
+		order by 
+		<if test="column != null and keyword != null">
+			${column} asc, 
+		</if>
+		B.block_no desc
+	</select>
+	
+	<!-- 자주 사용하는(ex : Top N Query (페이징)) 구문들을 보관해두고서 불러서 사용 - 구문의 조각은 <sql> 
+		태그로 작성 - 이 구문을 불러올 때는 <include>로 작성 - beginRow와 endRow가 있을 때만 구동되도록 설정 : 
+		유연하게 처리 -->
+	<sql id="top-n-header">
+		<if test="beginRow != null and endRow != null">
+			select * from (
+			select rownum rn, TMP.* from (
+		</if>
+	</sql>
+	<sql id="top-n-footer">
+		<if test="beginRow != null and endRow != null">
+			) TMP
+			) where rn between #{beginRow} and #{endRow}
+		</if>
+	</sql>
+	
+	
+
+</mapper>

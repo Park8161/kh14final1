@@ -1,6 +1,7 @@
 package com.kh.fa.restcontroller;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,12 +16,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kh.fa.configuration.CustomCertProperties;
+import com.kh.fa.dao.BlockDao;
 import com.kh.fa.dao.CertDao;
 import com.kh.fa.dao.MemberDao;
 import com.kh.fa.dao.MemberTokenDao;
+import com.kh.fa.dto.BlockDto;
 import com.kh.fa.dto.CertDto;
 import com.kh.fa.dto.MemberDto;
 import com.kh.fa.dto.MemberTokenDto;
+import com.kh.fa.dto.ProductDto;
 import com.kh.fa.error.TargetNotFoundException;
 import com.kh.fa.service.EmailService;
 import com.kh.fa.service.TokenService;
@@ -57,6 +61,8 @@ public class MemberRestController {
 	private MemberTokenDao memberTokenDao;
 	@Autowired
 	private PasswordEncoder encoder;
+	@Autowired
+	private BlockDao blockDao;
 	
 	// 여태까지 배운대로라면 복합검색도 GET으로 구현해야 한다
 	// 하지만 보내야 하는 데이터가 너무 많아서 GET으로 구현하는 것은 어려움이 있다
@@ -149,18 +155,6 @@ public class MemberRestController {
 		return response;
 	}
 	
-	// 차단 목록 검색
-	@PostMapping("/block")
-	public MemberBlockResponseVO block(@RequestBody MemberBlockRequestVO vo) {
-		int count = memberDao.countWithPaging(vo);
-		boolean last = vo.getEndRow() == null || count <= vo.getEndRow();
-		MemberBlockResponseVO response = new MemberBlockResponseVO();
-		response.setMemberBlockList(memberDao.selectListByPaging(vo));
-		response.setCount(count);
-		response.setLast(last);
-		return response;
-	}
-	
 	// 마이페이지 - 회원 정보 뿐만 아니라 거래 이력 및 차단 목록 등의 조회를 위하여 Dto가 아닌 VO를 전송
 	@GetMapping("/mypage")
 	public MypageVO mypage(@RequestHeader("Authorization") String accessToken) {
@@ -170,14 +164,12 @@ public class MemberRestController {
 		MemberDto memberDto = memberDao.selectOne(claimVO.getMemberId());
 		if(memberDto == null) throw new TargetNotFoundException("존재하지 않는 회원");
 		memberDto.setMemberPw(null); // 비밀번호 제거
-//		BlockDto blockDto = blockDao.selectOne(claimVO.getMemberId());
-//		ProductDto productDto = productDao.selectOne(claimVO.getMemberId()); 
-//		if(productDto == null) throw new TargetNotFoundException("존재하지 않는 상품");
+//		List<ProductDto> productList = productDao.selectList(claimVO.getMemberId()); 
+//		if(productList == null) throw new TargetNotFoundException("존재하지 않는 상품 목록");
 		
 		MypageVO response = new MypageVO();
 		response.setMemberDto(memberDto);
-//		response.setBlockDto(blockDto);
-//		response.setProductDto(productDto);
+//		response.setProductList(productList);
 		return response;
 	}
 	
@@ -295,4 +287,56 @@ public class MemberRestController {
 		// 회원 정보 삭제
 		memberDao.delete(memberDto.getMemberId());		
 	}
+	
+	// 차단 목록 검색
+	@PostMapping("/block/list")
+	public MemberBlockResponseVO block(@RequestBody MemberBlockRequestVO vo) {
+		int count = blockDao.countWithPaging(vo);
+		boolean last = vo.getEndRow() == null || count <= vo.getEndRow();
+		MemberBlockResponseVO response = new MemberBlockResponseVO();
+		response.setMemberBlockList(blockDao.selectListByPaging(vo));
+		response.setCount(count);
+		response.setLast(last);
+		return response;
+	}
+		
+	// 상대방 차단 등록
+	@PostMapping("/block/insert")
+	public void insertBlock(@RequestHeader("Authorization") String token,
+							@RequestBody BlockDto blockDto) {
+		// 세션 정보 확인 및 아이디 추출
+		if(tokenService.isBearerToken(token) == false) throw new TargetNotFoundException("유효하지 않은 토큰");
+		MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(token));
+		MemberDto memberDto = memberDao.selectOne(claimVO.getMemberId());
+		if(memberDto == null) throw new TargetNotFoundException("존재하지 않는 회원");
+		// 추출한 아이디를 작성자로 설정 (프론트에서 blockDto에 받아올 시 안해도 됨)
+		blockDto.setBlockOwner(claimVO.getMemberId()); 
+		// 상대방의 마지막 차단/해제 상태 확인
+		BlockDto lastDto = blockDao.selectLastOne(blockDto);
+		boolean isBlock = lastDto == null || lastDto.getBlockType().equals("해제");
+		if(isBlock == false) throw new TargetNotFoundException("이미 차단한 상대");
+		// 차단 등록
+		blockDao.insertBlock(blockDto); 
+	}
+	
+	// 상대방 차단 해제
+	@PostMapping("/block/cancel")
+	public void cancelBlock(@RequestHeader("Authorization") String token,
+							@RequestBody BlockDto blockDto) {
+		// 세션 정보 확인 및 아이디 추출
+		if(tokenService.isBearerToken(token) == false) throw new TargetNotFoundException("유효하지 않은 토큰");
+		MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(token));
+		MemberDto memberDto = memberDao.selectOne(claimVO.getMemberId());
+		if(memberDto == null) throw new TargetNotFoundException("존재하지 않는 회원");
+		// 추출한 아이디를 작성자로 설정 (프론트에서 blockDto에 받아올 시 안해도 됨)
+		blockDto.setBlockOwner(claimVO.getMemberId()); 
+		// 상대방의 마지막 차단/해제 상태 확인
+		BlockDto lastDto = blockDao.selectLastOne(blockDto);
+		boolean isBlock = lastDto == null || lastDto.getBlockType().equals("해제");
+		if(isBlock == true) throw new TargetNotFoundException("이미 해제한 상대");
+		// 차단 해제
+		blockDao.cancelBlock(blockDto); 
+	}
+	
+	
 }

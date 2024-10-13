@@ -349,47 +349,6 @@
 		update member set member_pw = #{memberPw} where member_id = #{memberId}
 	</update>
 	
-	<!-- 특정 회원이 차단한 유저들 목록 -->
-	<!-- nvl함수 : null을 다른 값으로 변환 -->
-	<select id="blockList" resultType="MemberBlockVO">
-		<!-- top-n-header -->
-		<include refid="top-n-header"></include>
-		
-		select 
-			M.*, B.block_memo, B.block_time, B.block_target, 
-			nvl(B.block_type, '해제') block_type  
-		from member M
-		left outer join block_latest B 
-		on M.member_id = B.block_target 
-		where B.block_owner = #{memberId}
-		<if test="column != null and keyword != null">
-			and instr(${column}, #{keyword}) > 0 
-		</if>
-		order by 
-		<if test="column != null and keyword != null">
-			${column} asc, 
-		</if>
-		M.member_id asc
-		
-		<!-- top-n-footer -->
-		<include refid="top-n-footer"></include>
-	</select>
-	
-	<!-- 특정 회원이 차단한 유저들 목록 카운트 -->
-	<select id="blockListCount" resultType="int">
-		select count(*) from member M
-		left outer join block_latest B 
-		on M.member_id = B.block_target 
-		where B.block_owner = #{memberId}
-		<if test="column != null and keyword != null">
-			and instr(${column}, #{keyword}) > 0 
-		</if>
-		order by 
-		<if test="column != null and keyword != null">
-			${column} asc, 
-		</if>
-		M.member_id asc
-	</select>
 	
 
 

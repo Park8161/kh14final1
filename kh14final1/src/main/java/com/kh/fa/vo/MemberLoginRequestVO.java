@@ -7,5 +7,5 @@ import lombok.Data;
 public class MemberLoginRequestVO {
 	private String memberId;
 	private String memberPw;
-	private String accessToken; // 나중에 들고올 토큰 정보
+//	private String accessToken; // 나중에 들고올 토큰 정보
 }

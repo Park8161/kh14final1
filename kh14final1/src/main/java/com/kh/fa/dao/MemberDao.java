@@ -47,31 +47,6 @@ public class MemberDao {
 		return isValid ? memberDto : null;
 	}	
 	
-	// 로그인전용 상세조회(+암호화 비밀번호)
-//	public MemberDto selectOneWithPassword(String memberId, String memberPw) {
-//		if(memberPw == null) {
-//			return sqlSession.selectOne("member.find", memberId);
-//		}
-//		else {
-//			List<MemberDto> list = sqlSession.selectOne("member.find", memberId);
-//			if(list.isEmpty()) return null;
-//			
-//			MemberDto memberDto = list.get(0); // 비밀번호 비교
-//			boolean isValid = encoder.matches(memberPw, memberDto.getMemberPw());
-//			return isValid ? memberDto : null;
-//		}
-//	}
-	
-	// 차단 목록 + 페이징 
-	public List<MemberBlockVO> selectListByPaging(MemberBlockRequestVO vo){
-		return sqlSession.selectList("member.blockList", vo);
-	}
-	
-	// 차단 목록 검색 카운트
-	public int countWithPaging(MemberBlockRequestVO vo) {
-		return sqlSession.selectOne("member.blockListCount", vo);
-	}
-
 	// 개인정보 변경
 	public boolean update(MemberDto memberDto) {
 		return sqlSession.update("member.edit", memberDto) > 0;

@@ -3,7 +3,7 @@ package com.kh.fa.dto;
 import lombok.Data;
 
 @Data
-public class FirstCategoryDto {
+public class CategoryDto {
 	private int firstCategorytNo;
 	private String firstCategoryName;
 	

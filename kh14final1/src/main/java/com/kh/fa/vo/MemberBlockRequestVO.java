@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Data
 public class MemberBlockRequestVO {
-	private String memberId;
+	private String blockOwner;
 	@JsonDeserialize(using = JsonEmptyStringToNullDeserializer.class)
 	private String column, keyword;	
 	@JsonDeserialize(using = JsonEmptyIntegerToNullDeserializer.class)
