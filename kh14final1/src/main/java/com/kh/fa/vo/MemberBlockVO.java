@@ -16,6 +16,7 @@ public class MemberBlockVO {
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
 	private Date memberLogin;
 	
+	private String blockNo;
 	private String blockTarget;
 	private String blockType;
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")

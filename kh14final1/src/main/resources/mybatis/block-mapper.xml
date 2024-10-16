@@ -39,9 +39,9 @@
 		)
 	</select>
 		
-	<!-- 특정 회원이 차단한 유저들 목록 -->
-	<select id="list" resultType="MemberBlockVO">
-		<!-- top-n-header -->
+	<!-- 차단 내역 조회 -->
+	<!-- <select id="list" resultType="MemberBlockVO">
+		top-n-header
 		<include refid="top-n-header"></include>
 		
 		select * from block B
@@ -57,16 +57,50 @@
 		</if>
 		B.block_no desc
 		
-		<!-- top-n-footer -->
+		top-n-footer
 		<include refid="top-n-footer"></include>
-	</select>
+	</select> -->
 	
-	<!-- 특정 회원이 차단한 유저들 목록 카운트 -->
-	<select id="count" resultType="int">
+	<!-- 차단 내역 카운트 -->
+	<!-- <select id="count" resultType="int">
 		select count(*) from block B
 		left outer join member M 
 		on B.block_target = M.member_id 
 		where B.block_owner = #{blockOwner}
+		<if test="column != null and keyword != null">
+			and instr(${column}, #{keyword}) > 0 
+		</if>
+		order by 
+		<if test="column != null and keyword != null">
+			${column} asc, 
+		</if>
+		B.block_no desc
+	</select> -->
+	
+	<!-- 차단 목록 조회 -->
+	<select id="list" resultType="MemberBlockVO">
+		select M.*, B.* from member M
+		left outer join block_latest B 
+		on M.member_id = B.block_target 
+		where B.block_owner = #{blockOwner} 
+		and B.block_type='차단' 
+		<if test="column != null and keyword != null">
+			and instr(${column}, #{keyword}) > 0 
+		</if>
+		order by 
+		<if test="column != null and keyword != null">
+			${column} asc, 
+		</if>
+		B.block_no desc
+	</select>
+	
+	<!-- 차단 목록 카운트 -->
+	<select id="count" resultType="int">
+		select count(*) from member M
+		left outer join block_latest B 
+		on M.member_id = B.block_target 
+		where B.block_owner = #{blockOwner} 
+		and B.block_type='차단' 
 		<if test="column != null and keyword != null">
 			and instr(${column}, #{keyword}) > 0 
 		</if>

@@ -290,7 +290,14 @@ public class MemberRestController {
 	
 	// 차단 목록 검색
 	@PostMapping("/block/list")
-	public MemberBlockResponseVO block(@RequestBody MemberBlockRequestVO vo) {
+	public MemberBlockResponseVO block(@RequestHeader("Authorization") String token,
+										@RequestBody MemberBlockRequestVO vo) {
+		// 세션 정보 확인 및 아이디 추출
+		if(tokenService.isBearerToken(token) == false) throw new TargetNotFoundException("유효하지 않은 토큰");
+		MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(token));
+		MemberDto memberDto = memberDao.selectOne(claimVO.getMemberId());
+		if(memberDto == null) throw new TargetNotFoundException("존재하지 않는 회원");
+		vo.setBlockOwner(claimVO.getMemberId());
 		int count = blockDao.countWithPaging(vo);
 		boolean last = vo.getEndRow() == null || count <= vo.getEndRow();
 		MemberBlockResponseVO response = new MemberBlockResponseVO();
