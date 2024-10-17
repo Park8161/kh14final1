@@ -20,7 +20,7 @@ public class RoomDao {
 		return sqlSession.selectOne("room.sequence");
 	}
 	
-	public void insert(RoomDto roomDto) {
+	public void insert(RoomDto roomDto) {		
 		sqlSession.insert("room.insert", roomDto);
 	}
 	
