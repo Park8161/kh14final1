@@ -13,7 +13,7 @@
   	
   	<!-- 등록 -->
   	<insert id="insert">
-  		insert into product(
+  		insert into product (
   			product_no, product_member, product_name,
   			product_category, product_price, product_detail,
   			product_qty
@@ -26,27 +26,42 @@
   	</insert>
   	
   	<!-- 첨부 테이블과의 연결 : product_image -->
-  	<insert id="connect">
+  	<insert id="connect" parameterType="map">
   		insert into product_image(product, attachment) 
   		values(#{productNo}, #{attachmentNo})
   	</insert>
   	
-  	<!-- 데이터 조회 -->
+  	<!-- 데이터 조회 + 페이징 + 검색-->
   	<select id="list" resultType="ProductDto">
-  		select * from product
-  	</select>
-  	
-  	<select id="search" resultType="ProductDto">
+  		<include refid="top-n-header"></include>
   		select * from product
   		<if test="column !=null and keyword !=null">
   			where instr(${column}, #{keyword}) > 0
   		</if>
-  		order by ${column} asc
+  		order by 
+  		<if test="column !=null and keyword !=null">
+			${column} asc,
+  		</if>
+  		product_no desc
+  		<include refid="top-n-footer"></include>
   	</select>
   	
+  	<!-- 목록 카운트 -->
+  	<select id="count" resultType="int">
+  		select count(*) from product
+  		<if test="column !=null and keyword !=null">
+  			where instr(${column}, #{keyword}) > 0
+  		</if>
+  		order by 
+  		<if test="column !=null and keyword !=null">
+			${column} asc,
+  		</if>
+  		product_no desc
+  	</select>
+  	  	
   	<!--  상세  -->
   	<select id="detail" resultType="productDto">
-  		select * from product where product_no = #{product_no}
+  		select * from product where product_no = #{productNo}
   	</select>
   	
   	<!-- 삭제  -->
@@ -76,5 +91,25 @@
   		where
   			product_no=#{productNo}
   	</update>
+  	
+  	
+  	
+  	
+  	<!-- 자주 사용하는(ex : Top N Query (페이징)) 구문들을 보관해두고서 불러서 사용 - 구문의 조각은 <sql> 
+		태그로 작성 - 이 구문을 불러올 때는 <include>로 작성 - beginRow와 endRow가 있을 때만 구동되도록 설정 : 
+		유연하게 처리 -->
+	<sql id="top-n-header">
+		<if test="beginRow != null and endRow != null">
+			select * from (
+			select rownum rn, TMP.* from (
+		</if>
+	</sql>
+	<sql id="top-n-footer">
+		<if test="beginRow != null and endRow != null">
+			) TMP
+			) where rn between #{beginRow} and #{endRow}
+		</if>
+	</sql> 	
+  	
  </mapper>
   	
