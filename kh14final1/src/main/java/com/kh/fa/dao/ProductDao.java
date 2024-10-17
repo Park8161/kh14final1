@@ -1,6 +1,7 @@
 package com.kh.fa.dao;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.ibatis.session.SqlSession;
@@ -8,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.kh.fa.dto.ProductDto;
+import com.kh.fa.vo.ProductListRequestVO;
 
 @Repository
 public class ProductDao {
@@ -31,6 +33,16 @@ public class ProductDao {
 		params.put("productNo", productNo);
 		params.put("attachmentNo", attachmentNo);
 		sqlSession.insert("product.connect", params);
+	}
+	
+	// 목록 + 페이징 + 검색
+	public List<ProductDto> selectListByPaging(ProductListRequestVO requestVO){
+		return sqlSession.selectList("product.list", requestVO);
+	}
+	
+	// 목록 카운트
+	public int countWithPaging(ProductListRequestVO requestVO) {
+		return sqlSession.selectOne("product.count", requestVO);
 	}
 	
 	// 상세 조회
