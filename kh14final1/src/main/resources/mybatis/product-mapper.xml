@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="product">
+
+  	<!-- 시퀀스 생성-->
+  	<select id="productSequence" resultType="int">
+  		select product_seq.nextval from dual
+  	</select>
+  	
+  	<!-- 등록 -->
+  	<select id="insert">
+  		insert into product(
+  			product_no, product_member, product_name,
+  			product_category, product_price, product_detail,
+  			product_state, product_qty, product_likes
+  		)
+  		values(
+  			#{productNo}, #{productMember}, #{productName},
+  			#{productCategory}, #{productPrice}, #{productDetail},
+  			#{productState}, #{productQty}, #{productLikes}
+  		)
+  	</select>
+  	<!-- 데이터 조회 -->
+  	<select id="list" resultType="ProductDto">
+  		select * from product
+  	</select>
+  	
+  	<select id="search" resultType="ProductDto">
+  		select * from product where
+  		instr(#{column}, {keyword}) > 0
+  		order by ${column} asc
+  	</select>
+  	
+  	<select id="listSearch" resultType="ProductDto">
+  		select * from product
+  		<if test="column !=null and keyword !=null">
+  			where instr(${column}, #{keyword}) > 0
+  		</if>
+  		order by ${column} asc
+  	</select>
+  	
+  	<!--  상세  -->
+  	<select id="detail" resultType="productDto">
+  		select * from product where product_no = #{product_no}
+  	</select>
+  	
+  	<!-- 삭제  -->
+  	<delete id="remove">
+  		delete product where product_no = #{productNo}
+  	</delete>
+  	
+  	<!-- 전체 PUT 수정 (likes, member 제외) -->
+  	<update id="edit">
+  		update product
+  			set product_name=#{productName}, product_category=#{productCategory},
+	  			product_price=#{productPrice}, productDetail=#{productDetail},
+	  			product_state=#{productState}, productQty=#{productQty}
+  			where product_no = #{productNo}
+  	</update>
+  
+  	<!-- PATCH 수정 -->
+  	<update id="memberEdit">
+  		update product
+  		<set>
+  			<if test="productName != null">product_name=#{productName},</if>
+  			<if test="productCategory != null">product_category=#{productCategory}</if>
+  			<if test="productPrice != null">product_price=#{productPrice}</if>
+  			<if test="productState != null">product_state=#{productState}</if>
+  			<if test="productQty != null">product_qty=#{productQty}</if>
+  		</set>
+  		where
+  			product_no=#{productNo}
+  	</update>
+ </mapper>
+  	
