@@ -10,9 +10,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 
 import com.kh.fa.dto.MemberDto;
+import com.kh.fa.dto.ProductDto;
 import com.kh.fa.vo.MemberBlockRequestVO;
 import com.kh.fa.vo.MemberBlockVO;
 import com.kh.fa.vo.MemberComplexRequestVO;
+import com.kh.fa.vo.MemberDetailVO;
 
 @Repository
 public class MemberDao {
@@ -87,6 +89,28 @@ public class MemberDao {
 	// 회원 정보 삭제
 	public boolean delete(String memberId) {
 		return sqlSession.delete("member.remove", memberId) > 0;
+	}
+
+	public MemberDetailVO selectMemberDetail(String memberId) {
+		MemberDetailVO memberDetailVO = new MemberDetailVO();
+		
+		if(sqlSession.selectOne("member.selectMemberDetail", memberId) == null) {
+			memberDetailVO.setMemberId(memberId);
+			//리뷰받은 기록이 없을 경우 디폴트 신뢰도 50
+			memberDetailVO.setReliability(50);
+			memberDetailVO.setReviewCnt(0);			
+		}
+		else {
+			memberDetailVO = sqlSession.selectOne("member.selectMemberDetail", memberId);
+		}
+		
+		return memberDetailVO;
+	}
+	
+	//특정 멤버의 상품 리스트를 추출하는 메소드
+	public List<ProductDto> selectMemberProduct(String memberId){
+		List<ProductDto> list = sqlSession.selectList("member.selectMemberProduct", memberId);
+		return list;
 	}
 	
 	

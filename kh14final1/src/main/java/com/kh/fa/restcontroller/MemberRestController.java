@@ -34,6 +34,7 @@ import com.kh.fa.vo.MemberChangePwVO;
 import com.kh.fa.vo.MemberClaimVO;
 import com.kh.fa.vo.MemberComplexRequestVO;
 import com.kh.fa.vo.MemberComplexResponseVO;
+import com.kh.fa.vo.MemberDetailVO;
 import com.kh.fa.vo.MemberExitRequestVO;
 import com.kh.fa.vo.MemberFindPwVO;
 import com.kh.fa.vo.MemberLoginRequestVO;
@@ -345,5 +346,23 @@ public class MemberRestController {
 		blockDao.cancelBlock(blockDto); 
 	}
 	
-	
+//	타회원 상세정보 조회
+	@GetMapping("/{memberId}")
+	public MemberDetailVO detail(
+			@PathVariable String memberId) {
+		MemberDetailVO memberDetailVO = new MemberDetailVO();
+		memberDetailVO = memberDao.selectMemberDetail(memberId);
+		
+		return memberDetailVO;
+	}
+
+//	특정 회원의 상품목록 조회	
+	@GetMapping("/product/{memberId}")
+	public List<ProductDto> memberProductList(@PathVariable String memberId){
+		if(memberDao.selectMemberProduct(memberId)==null) {
+			List<ProductDto> list =null;			
+		}
+		List<ProductDto> list = memberDao.selectMemberProduct(memberId); 
+		return list;
+	}
 }

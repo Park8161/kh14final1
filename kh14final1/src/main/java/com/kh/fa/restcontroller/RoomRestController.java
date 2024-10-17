@@ -40,10 +40,14 @@ public class RoomRestController {
 		return roomDao.selectOne(roomNo); // DB에서 만든 정보까지 포함해서 반환
 	}
 	
-	@GetMapping("/")
-	public List<RoomVO> list(@RequestHeader("Authorization") String token) {
-		MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(token));
-		return roomDao.selectList(claimVO.getMemberId());
+	@GetMapping("/{memberId}")
+	public List<RoomVO> list(
+			@PathVariable String memberId
+			
+//			,@RequestHeader("Authorization") String token
+			) {
+//		MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(token));
+		return roomDao.selectList(memberId);
 	}
 	
 	@DeleteMapping("/{roomNo}")

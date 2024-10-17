@@ -349,7 +349,30 @@
 		update member set member_pw = #{memberPw} where member_id = #{memberId}
 	</update>
 	
-	
-
-
+	<select id="selectMemberDetail" resultType="MemberDetailVO">
+	   <!-- 타회원 상세정보 추출 : 신뢰지수, 후기 개수 -->
+			   
+		SELECT 
+		    t.REVIEW_TARGET, 
+		    NVL(r.review_count, 0) AS review_count, 
+		    NVL(r.avg_score, 0) AS avg_score
+		FROM 
+		    (SELECT #{memberId} AS REVIEW_TARGET FROM dual) t
+		LEFT JOIN 
+		    (SELECT 
+		        REVIEW_TARGET, 
+		        COUNT(*) AS review_count, 
+		        AVG(review_score) AS avg_score
+		     FROM 
+		        review
+		     WHERE 
+		        REVIEW_TARGET = #{memberId}
+		     GROUP BY 
+		        REVIEW_TARGET
+		    ) r
+		ON t.REVIEW_TARGET = r.REVIEW_TARGET
+	</select>
+	<select id="selectMemberProduct" resultType="ProductDto">
+		SELECT * FROM product WHERE product_member = #{memberId}
+	</select>
 </mapper>
