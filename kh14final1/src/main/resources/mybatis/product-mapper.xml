@@ -70,9 +70,12 @@
   		select * from product where product_no = #{productNo}
   	</select>
   	
-  	<!-- 삭제  -->
+  	<!-- 삭제 -->
   	<delete id="remove">
   		delete product where product_no = #{productNo}
+  	</delete>
+  	<delete id="removeImage">
+  		delete product_image where product = #{productNo}
   	</delete>
   	
   	<!-- 전체 PUT 수정 (likes, member 제외) -->
