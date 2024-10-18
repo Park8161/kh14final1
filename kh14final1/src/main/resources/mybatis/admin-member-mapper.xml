@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  <!-- 목록 조회 -->
+  <mapper namespace="admin">
+  	<select id="list" resultType="MemberDto">
+  		select * from member
+  	</select>
+  	
+  	<!-- 회원 상세 조회 -->
+  	<select id="detail" resultType="MemberDto">
+  		select * from member where member_id = #{memberId} 
+  	</select>
+  	
+  	<!-- 검색 -->
+  	<select id="search" resultType="MemberDto">
+  	<![CDATA[
+  		select * from member
+  			where instr(${column}, #{keyword}) > 0
+  		order by ${column} asc
+  	]]>
+  	</select>
+  	  	
+  	<!-- 회원 수정 -->
+  	<update id="edit">
+  		update member
+		<set>
+			<if test="memberName != null">member_name = #{memberName},</if>
+			<if test="memberLevel != null">member_level = #{memberLevel},</if>
+			<if test="memberEmail != null">member_email = #{memberEmail},</if>
+			<if test="memberPost != null and memberAddress1 != null and memberAddress2 != null">
+				member_post = #{memberPost}, member_address1 = #{memberAddress1}, member_address2 = #{memberAddress2},
+			</if>
+			<if test="memberContact != null">member_contact = #{memberContact},</if>
+			<if test="memberContact != null">member_birth = #{memberBirth},</if>
+			<if test="memberPoint != null">member_point = #{memberPoint}</if>
+		</set> 
+		where member_id = #{memberId}    			
+  	</update>
+  	
+  	<!-- 회원 삭제 -->
+  	<delete id="del">
+  		delete member where member_id = #{memberId}
+  	</delete>
+  	
+  	<!-- 회원 차단 -->
+  	<insert id="bann">
+  		insert into ban(
+  			ban_no, ban_type, ban_memo, ban_time, ban_target
+  		)
+  		values(
+  			ban_seq.nextval, '차단', #{banMemo}, sysdate, 
+  			#{banTarget} 
+  		)
+  	</insert>
+  	
+  	<!-- 회원 차단 해제 -->
+  	<insert id="free">
+  		insert into ban(
+  			ban_no, ban_type, ban_memo, ban_time, ban_target
+  		)
+  		values(
+  			ban_seq.nextval, '해제', #{banMemo}, sysdate,
+  			#{banTarget}
+  		)
+  	</insert>
+  	
+  </mapper>

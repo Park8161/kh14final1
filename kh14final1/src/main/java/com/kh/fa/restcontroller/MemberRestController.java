@@ -365,4 +365,5 @@ public class MemberRestController {
 		List<ProductDto> list = memberDao.selectMemberProduct(memberId); 
 		return list;
 	}
+
 }
