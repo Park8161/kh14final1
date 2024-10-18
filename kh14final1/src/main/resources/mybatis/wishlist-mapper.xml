@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="wishlist">
+	
+	<!-- 관심 추가 -->
+	<insert id="insert">
+		insert into wishlist (
+			wishlist_no, wishlist_member, wishlist_product, wishlist_date
+		) values(
+			wishlist_seq.nextval, #{memberId}, #{productNo}, sysdate
+		)
+	</insert>
+	
+	<!-- 관심 취소 -->
+	<delete id="delete">
+		delete wishlist 
+		where wishlist_member = #{memberId} 
+		and wishlist_product = #{productNo}
+	</delete>
+	
+	<!-- 관심 목록 -->
+	<select id="list">
+		select * from wishlist where wishlist_member = #{memberId}
+	</select>
+
+</mapper>
