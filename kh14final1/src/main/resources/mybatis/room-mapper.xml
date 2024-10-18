@@ -17,7 +17,7 @@
 	
 	<!-- 목록 -->
 	<select id="list" resultType="RoomDto">
-		select * from room order by room_no asc
+		select * from room where order by room_no asc
 	</select>
 	
 	<!-- 상세 -->
@@ -37,15 +37,11 @@
 	
 	<!-- 추가 : 특정 회원의 접속 여부가 포함된 방 목록 -->
 	<select id="listByMember" resultType="RoomVO">
-		select 
-		    R.*, nvl2(RM.member_id, 'Y', 'N') "join"
-		from 
-		    room R left outer join (
-		        select * from room_member where member_id = #{memberId}
-		    ) RM
-		        on R.room_no = RM.room_no
-        order by R.room_no asc
+		SELECT r.*
+		FROM room r
+		INNER JOIN room_member rm
+		ON r.room_no = rm.room_no
+		WHERE rm.member_id = #{memberId}
 	</select>
 	
-
 </mapper>
