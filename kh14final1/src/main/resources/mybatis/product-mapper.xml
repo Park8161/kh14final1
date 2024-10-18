@@ -82,8 +82,8 @@
   	<update id="edit">
   		update product
   			set product_name=#{productName}, product_category=#{productCategory},
-	  			product_price=#{productPrice}, productDetail=#{productDetail},
-	  			product_state=#{productState}, productQty=#{productQty}
+	  			product_price=#{productPrice}, product_detail=#{productDetail},
+	  			product_state=#{productState}, product_qty=#{productQty}
   			where product_no = #{productNo}
   	</update>
   

@@ -118,9 +118,9 @@ public class ProductRestController {
 	// 상세 정보의 수정된 정보를 그대로 받아 requestVO로 사용
 	// 첨부파일 수정은 수정 전/후를 비교하여 삭제 대상을 찾아 삭제 처리
 	@Transactional
-	@PostMapping("/edit")
+	@PostMapping(value = "/edit", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public void edit(@ModelAttribute ProductEditRequestVO requestVO) throws IllegalStateException, IOException {
-		ProductDto originDto = productDao.selectOne(requestVO.getProductDto().getProductNo());
+		ProductDto originDto = productDao.selectOne(requestVO.getProductNo());
 		if(originDto == null) throw new TargetNotFoundException("존재하지 않는 상품 번호");
 		
 		// 수정 전 
@@ -135,6 +135,7 @@ public class ProductRestController {
 		int attachListSize = requestVO.getAttachList().size();
 		for(int i=0; i<attachListSize; i++) {
 			int attachmentNo = attachmentService.save(requestVO.getAttachList().get(i));
+			productDao.connect(requestVO.getProductNo(), attachmentNo);
 			after.add(attachmentNo); // 저장소에 추가
 		}
 		
@@ -148,9 +149,16 @@ public class ProductRestController {
 		
 		// 상품 정보 수정
 		// 글처리 다했으므로 글이 없는지 파악할 필요가 없다
-		productDao.update(requestVO.getProductDto());
-
-	
+		ProductDto productDto = productDao.selectOne(requestVO.getProductNo());
+		productDto.setProductName(requestVO.getProductName());
+		productDto.setProductMember(requestVO.getProductMember());
+		productDto.setProductPrice(requestVO.getProductPrice());
+		productDto.setProductDetail(requestVO.getProductDetail());
+		productDto.setProductState(requestVO.getProductState());
+		productDto.setProductQty(requestVO.getProductQty());
+		productDto.setProductCategory(requestVO.getProductCategory());
+//		System.out.println("여기야!! : "+productDto);
+		productDao.update(productDto);
 	}
 	
 	// 상품 정보 삭제
