@@ -32,22 +32,39 @@ public class RoomRestController {
 	private TokenService tokenService;
 	
 	@PostMapping("/")
-	public RoomDto insert(@RequestBody RoomDto roomDto){
-		int roomNo = roomDao.sequence();
-		roomDto.setRoomNo(roomNo);
-		roomDao.insert(roomDto);
-		// return roomDto; // 시간이 안들어있음 >> DB에서 만든 정보가 들어있지 않음
-		return roomDao.selectOne(roomNo); // DB에서 만든 정보까지 포함해서 반환
+	public void insert(@RequestBody RoomMemberDto roomMemberDto,
+			@RequestHeader("Authorization") String token
+			){
+		MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(token));
+		
+//		확인을 위해 필요한 데이터: 접속자 id, 상품 번호
+//		해당 상품에 대한 채팅 여부 확인 
+		boolean isRoomExist = roomDao.isRoomExist(roomMemberDto);		
+		if(isRoomExist) {
+//			방 입장
+			
+		}
+		else {
+			int roomNo = roomDao.sequence();
+			roomMemberDto.setRoomNo(roomNo);
+			roomMemberDto.setMemberId(claimVO.getMemberId()); // 아이디 설정
+			roomMemberDto.setProductNo(roomNo);
+//			방 생성 	
+		}
+		
+//		roomDto.setRoomNo(roomNo);
+//		roomDao.insert(roomDto);
+//		
+//		roomDao.enter(roomMemberDto); // 등록
+//		return roomDao.selectOne(roomNo); // DB에서 만든 정보까지 포함해서 반환
 	}
 	
-	@GetMapping("/{memberId}")
+	@GetMapping("/")
 	public List<RoomVO> list(
-			@PathVariable String memberId
-			
-//			,@RequestHeader("Authorization") String token
+			@RequestHeader("Authorization") String token
 			) {
-//		MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(token));
-		return roomDao.selectList(memberId);
+		MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(token));
+		return roomDao.selectList(claimVO.getMemberId());
 	}
 	
 	@DeleteMapping("/{roomNo}")
