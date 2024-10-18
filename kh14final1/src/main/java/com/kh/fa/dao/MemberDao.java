@@ -9,9 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 
+import com.kh.fa.dto.BanDto;
 import com.kh.fa.dto.MemberDto;
-import com.kh.fa.vo.MemberBlockRequestVO;
-import com.kh.fa.vo.MemberBlockVO;
 import com.kh.fa.vo.MemberComplexRequestVO;
 
 @Repository
@@ -84,11 +83,43 @@ public class MemberDao {
 		return sqlSession.update("member.editByAdmin", memberDto) > 0;
 	}
 
-	// 회원 정보 삭제
+	// 회원 정보 삭제(관리자)
 	public boolean delete(String memberId) {
-		return sqlSession.delete("member.remove", memberId) > 0;
+		return sqlSession.delete("admin.del", memberId) > 0;
+	}
+
+	//목록 조회(관리자)
+	public List<MemberDto> selectList() {		
+		return sqlSession.selectList("admin.list");
+	}
+
+	//검색 기능(관리자)
+	public List<MemberDto> selectList(String column, String keyword) {
+		Map<String, Object> params = new HashMap<>();
+		params.put("column", column);
+		params.put("keyword", keyword);
+		return sqlSession.selectList("admin.search", params);
 	}
 	
+	//회원 상세 조회(관리자)
+	public MemberDto selectOneAdmin(String memberId) {
+		return sqlSession.selectOne("admin.detail", memberId);
+	}
+	
+	//회원 정보 수정(관리자)
+	public boolean updateAdmin(MemberDto memberDto) {
+		return sqlSession.update("admin.edit", memberDto) > 0;
+	}
+	
+	//회원 차단(관리자)
+	public void banMember(BanDto banDto) {
+		 sqlSession.insert("ban.bann", banDto);
+	}
+	
+	//회원 차단해제(관리자
+	public void freeMember(BanDto banDto) {
+		 sqlSession.insert("ban.free", banDto);
+	}
 	
 	
 }
