@@ -319,23 +319,47 @@
 	</delete>
 	
 	<!-- 수정 -->
-	<update id="edit">
+	<!-- <update id="edit">
 		update member
 		set member_name = #{memberName}, member_email = #{memberEmail}, 
 			member_post = #{memberPost}, member_address1 = #{memberAddress1}, 
 			member_address2 = #{memberAddress2}, 
 			member_contact = #{memberContact}, member_birth = #{memberBirth} 
 		where member_id = #{memberId}  
+	</update> -->	
+	<update id="edit">
+		update member
+		<set>
+			<if test="memberName != null">member_name = #{memberName},</if>
+			<if test="memberEmail != null">member_email = #{memberEmail},</if>
+			<if test="memberPost != null and memberAddress1 != null and memberAddress2 != null">
+				member_post = #{memberPost}, member_address1 = #{memberAddress1}, member_address2 = #{memberAddress2},
+			</if>
+			<if test="memberContact != null">member_contact = #{memberContact},</if>
+			<if test="memberContact != null">member_birth = #{memberBirth}</if>
+		</set> 
+		where member_id = #{memberId}  
 	</update>
 	
 	<!-- 수정 by 관리자 -->
 	<update id="editByAdmin">
 		update member
-		set member_name = #{memberName}, member_level = #{memberLevel},
+		<set>
+			<if test="memberName != null">member_name = #{memberName},</if>
+			<if test="memberLevel != null">member_level = #{memberLevel},</if>
+			<if test="memberEmail != null">member_email = #{memberEmail},</if>
+			<if test="memberPost != null and memberAddress1 != null and memberAddress2 != null">
+				member_post = #{memberPost}, member_address1 = #{memberAddress1}, member_address2 = #{memberAddress2},
+			</if>
+			<if test="memberContact != null">member_contact = #{memberContact},</if>
+			<if test="memberContact != null">member_birth = #{memberBirth},</if>
+			<if test="memberPoint != null">member_point = #{memberPoint}</if>
+		</set> 
+		<!-- set member_name = #{memberName}, member_level = #{memberLevel},
 			member_email = #{memberEmail}, member_post = #{memberPost},
 			member_address1 = #{memberAddress1}, member_address2 = #{memberAddress2}, 
 			member_contact = #{memberContact}, member_birth = #{memberBirth},
-			member_point = #{memberPoint}
+			member_point = #{memberPoint} -->
 		where member_id = #{memberId}  
 	</update>
 	
@@ -349,7 +373,30 @@
 		update member set member_pw = #{memberPw} where member_id = #{memberId}
 	</update>
 	
-	
-
-
+	<select id="selectMemberDetail" resultType="MemberDetailVO">
+	   <!-- 타회원 상세정보 추출 : 신뢰지수, 후기 개수 -->
+			   
+		SELECT 
+		    t.REVIEW_TARGET, 
+		    NVL(r.review_count, 0) AS review_count, 
+		    NVL(r.avg_score, 0) AS avg_score
+		FROM 
+		    (SELECT #{memberId} AS REVIEW_TARGET FROM dual) t
+		LEFT JOIN 
+		    (SELECT 
+		        REVIEW_TARGET, 
+		        COUNT(*) AS review_count, 
+		        AVG(review_score) AS avg_score
+		     FROM 
+		        review
+		     WHERE 
+		        REVIEW_TARGET = #{memberId}
+		     GROUP BY 
+		        REVIEW_TARGET
+		    ) r
+		ON t.REVIEW_TARGET = r.REVIEW_TARGET
+	</select>
+	<select id="selectMemberProduct" resultType="ProductDto">
+		SELECT * FROM product WHERE product_member = #{memberId}
+	</select>
 </mapper>

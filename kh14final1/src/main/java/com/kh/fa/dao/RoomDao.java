@@ -20,7 +20,7 @@ public class RoomDao {
 		return sqlSession.selectOne("room.sequence");
 	}
 	
-	public void insert(RoomDto roomDto) {
+	public void insert(RoomDto roomDto) {		
 		sqlSession.insert("room.insert", roomDto);
 	}
 	
@@ -58,8 +58,14 @@ public class RoomDao {
 	
 	// 채팅방 자격 검사
 	public boolean check(RoomMemberDto roomMemberDto) {
-		int reult = sqlSession.selectOne("roomMember.check", roomMemberDto);
-		return reult > 0; // myBatis가 자동으로 자료형을 파악하는데 가끔 못찾는 경우 콕 집어서 설명해주어야 함
+		int result = sqlSession.selectOne("roomMember.check", roomMemberDto);
+		return result > 0; // myBatis가 자동으로 자료형을 파악하는데 가끔 못찾는 경우 콕 집어서 설명해주어야 함
+	}
+	
+//	해당 상품과의 채팅 기록이 있는지 (방이 존재하는지 검사)
+	public boolean isRoomExist(RoomMemberDto roomMemberDto) {
+		int result = sqlSession.selectOne("roomMember.isRoomExist", roomMemberDto);
+		return result > 0;
 	}
 	
 	

@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="product">
+
+  	<!-- 시퀀스 생성-->
+  	<select id="sequence" resultType="int">
+  		select product_seq.nextval from dual
+  	</select>
+  	
+  	<!-- 등록 -->
+  	<insert id="insert">
+  		insert into product (
+  			product_no, product_member, product_name,
+  			product_category, product_price, product_detail,
+  			product_qty
+  		)
+  		values(
+  			#{productNo}, #{productMember}, #{productName},
+  			#{productCategory}, #{productPrice}, #{productDetail},
+  			#{productQty}
+  		)
+  	</insert>
+  	
+  	<!-- 첨부 테이블과의 연결 : product_image -->
+  	<insert id="connect" parameterType="map">
+  		insert into product_image(product, attachment) 
+  		values(#{productNo}, #{attachmentNo})
+  	</insert>
+  	
+  	<!-- 데이터 조회 + 페이징 + 검색-->
+  	<select id="list" resultType="ProductListVO">
+  		<include refid="top-n-header"></include>
+  		select P.*, I.attachment from product P 
+  		left outer join product_image I on P.product_no = I.product 
+  		where 
+			I.attachment = (
+  				select min(attachment) from product_image 
+  				where product = P.product_no
+  			)
+  		<if test="column !=null and keyword !=null">
+  			and instr(${column}, #{keyword}) > 0
+  		</if>
+  		order by 
+  		<if test="column !=null and keyword !=null">
+			${column} asc,
+  		</if>
+  		product_no desc
+  		<include refid="top-n-footer"></include>
+  	</select>
+  	
+  	<!-- 목록 카운트 -->
+  	<select id="count" resultType="int">
+  		select count(*) from product
+  		<if test="column !=null and keyword !=null">
+  			where instr(${column}, #{keyword}) > 0
+  		</if>
+  		order by 
+  		<if test="column !=null and keyword !=null">
+			${column} asc,
+  		</if>
+  		product_no desc
+  	</select>
+  	  	
+  	<!--  상세  -->
+  	<select id="detail" resultType="productDto">
+  		select * from product where product_no = #{productNo}
+  	</select>
+  	
+  	<!-- 삭제 -->
+  	<delete id="remove">
+  		delete product where product_no = #{productNo}
+  	</delete>
+  	<delete id="removeImage">
+  		delete product_image where product = #{productNo}
+  	</delete>
+  	
+  	<!-- 전체 PUT 수정 (likes, member 제외) -->
+  	<update id="edit">
+  		update product
+  			set product_name=#{productName}, product_category=#{productCategory},
+	  			product_price=#{productPrice}, productDetail=#{productDetail},
+	  			product_state=#{productState}, productQty=#{productQty}
+  			where product_no = #{productNo}
+  	</update>
+  
+  	<!-- PATCH 수정 -->
+  	<update id="memberEdit">
+  		update product
+  		<set>
+  			<if test="productName != null">product_name=#{productName},</if>
+  			<if test="productCategory != null">product_category=#{productCategory}</if>
+  			<if test="productPrice != null">product_price=#{productPrice}</if>
+  			<if test="productState != null">product_state=#{productState}</if>
+  			<if test="productQty != null">product_qty=#{productQty}</if>
+  		</set>
+  		where
+  			product_no=#{productNo}
+  	</update>
+  	
+  	<!-- 여러 이미지 중 첫 번째만 가져오는 메소드 -->
+  	<select id="findImage" resultType="Integer">
+  		select min(attachment) from product_image where product = #{productNo}
+  	</select>
+  	
+  	<!-- 여러 이미지를 가져오는 메소드 -->
+  	<select id="findImages" resultType="Integer">
+  		select attachment from product_image where product = #{productNo}
+  	</select>
+  	
+  	<!-- 좋아요 갱신 기능 -->
+  	<update id="likes">
+  		update product set product_likes = (
+ 			select count(*) from product_likes where product_no = #{productNo}
+  		) where product_no = #{productNo}
+  	</update>
+  	
+  	
+  	<!-- 자주 사용하는(ex : Top N Query (페이징)) 구문들을 보관해두고서 불러서 사용 - 구문의 조각은 <sql> 
+		태그로 작성 - 이 구문을 불러올 때는 <include>로 작성 - beginRow와 endRow가 있을 때만 구동되도록 설정 : 
+		유연하게 처리 -->
+	<sql id="top-n-header">
+		<if test="beginRow != null and endRow != null">
+			select * from (
+			select rownum rn, TMP.* from (
+		</if>
+	</sql>
+	<sql id="top-n-footer">
+		<if test="beginRow != null and endRow != null">
+			) TMP
+			) where rn between #{beginRow} and #{endRow}
+		</if>
+	</sql> 	
+  	
+ </mapper>
+  	
