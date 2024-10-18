@@ -32,11 +32,17 @@
   	</insert>
   	
   	<!-- 데이터 조회 + 페이징 + 검색-->
-  	<select id="list" resultType="ProductDto">
+  	<select id="list" resultType="ProductListVO">
   		<include refid="top-n-header"></include>
-  		select * from product
+  		select P.*, I.attachment from product P 
+  		left outer join product_image I on P.product_no = I.product 
+  		where 
+			I.attachment = (
+  				select min(attachment) from product_image 
+  				where product = P.product_no
+  			)
   		<if test="column !=null and keyword !=null">
-  			where instr(${column}, #{keyword}) > 0
+  			and instr(${column}, #{keyword}) > 0
   		</if>
   		order by 
   		<if test="column !=null and keyword !=null">
@@ -92,7 +98,22 @@
   			product_no=#{productNo}
   	</update>
   	
+  	<!-- 여러 이미지 중 첫 번째만 가져오는 메소드 -->
+  	<select id="findImage" resultType="Integer">
+  		select min(attachment) from product_image where product = #{productNo}
+  	</select>
   	
+  	<!-- 여러 이미지를 가져오는 메소드 -->
+  	<select id="findImages" resultType="Integer">
+  		select attachment from product_image where product = #{productNo}
+  	</select>
+  	
+  	<!-- 좋아요 갱신 기능 -->
+  	<update id="likes">
+  		update product set product_likes = (
+ 			select count(*) from product_likes where product_no = #{productNo}
+  		) where product_no = #{productNo}
+  	</update>
   	
   	
   	<!-- 자주 사용하는(ex : Top N Query (페이징)) 구문들을 보관해두고서 불러서 사용 - 구문의 조각은 <sql> 

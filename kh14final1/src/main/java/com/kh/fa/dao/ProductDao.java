@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import com.kh.fa.dto.ProductDto;
 import com.kh.fa.vo.ProductListRequestVO;
+import com.kh.fa.vo.ProductListVO;
 
 @Repository
 public class ProductDao {
@@ -35,8 +36,18 @@ public class ProductDao {
 		sqlSession.insert("product.connect", params);
 	}
 	
+	// 이미지 찾기 - 여러 이미지 중 첫 번째만 가져오기
+	public Integer findImage(int productNo) {
+		return sqlSession.selectOne("product.findImage", productNo);
+	}
+	
+	// 이미지 찾기 - 여러 이미지를 가져오기
+	public List<Integer> findImages(int productNo) {
+		return sqlSession.selectList("product.findImages", productNo);
+	}
+	
 	// 목록 + 페이징 + 검색
-	public List<ProductDto> selectListByPaging(ProductListRequestVO requestVO){
+	public List<ProductListVO> selectListByPaging(ProductListRequestVO requestVO){
 		return sqlSession.selectList("product.list", requestVO);
 	}
 	
@@ -48,6 +59,10 @@ public class ProductDao {
 	// 상세 조회
 	public ProductDto selectOne(int productNo) {
 		return sqlSession.selectOne("product.detail", productNo);
+	}
+
+	public boolean update(ProductDto productDto) {
+		return sqlSession.update("product.edit", productDto) > 0;		
 	}
 
 	
