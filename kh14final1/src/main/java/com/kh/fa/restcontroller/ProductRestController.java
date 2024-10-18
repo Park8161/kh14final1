@@ -8,6 +8,7 @@ import java.util.Set;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +32,7 @@ import com.kh.fa.service.AttachmentService;
 import com.kh.fa.service.TokenService;
 import com.kh.fa.vo.MemberClaimVO;
 import com.kh.fa.vo.ProductDetailResponseVO;
+import com.kh.fa.vo.ProductEditRequestVO;
 import com.kh.fa.vo.ProductInsertRequestVO;
 import com.kh.fa.vo.ProductListRequestVO;
 import com.kh.fa.vo.ProductListResponseVO;
@@ -115,27 +117,25 @@ public class ProductRestController {
 	// 상품 정보 수정
 	// 상세 정보의 수정된 정보를 그대로 받아 requestVO로 사용
 	// 첨부파일 수정은 수정 전/후를 비교하여 삭제 대상을 찾아 삭제 처리
+	@Transactional
 	@PostMapping("/edit")
-	public void edit(@ModelAttribute ProductDetailResponseVO RequestVo) {
-		ProductDto originDto = productDao.selectOne(RequestVo.getProductDto().getProductNo());
+	public void edit(@ModelAttribute ProductEditRequestVO requestVO) throws IllegalStateException, IOException {
+		ProductDto originDto = productDao.selectOne(requestVO.getProductDto().getProductNo());
 		if(originDto == null) throw new TargetNotFoundException("존재하지 않는 상품 번호");
 		
 		// 수정 전 
 		Set<Integer> before = new HashSet<>();
-		Document beforeDocument = Jsoup.parse(originDto.getProductDetail());
-		for(Element el : beforeDocument.select(".product-attach")) { // .product-attach 찾아서 반복해라
-			String keyStr = el.attr("data-key"); // data-key 속성 추출
-			int key = Integer.parseInt(keyStr); // int로 변환
-			before.add(key); // 저장소에 추가
+		List<Integer> beforeList = productDao.findImages(originDto.getProductNo());
+		for(int i=0; i<beforeList.size(); i++) {
+			before.add(beforeList.get(i)); // 저장소에 추가
 		}		
 		
 		// 수정 후
 		Set<Integer> after = new HashSet<>();
-		Document afterDocument = Jsoup.parse(RequestVo.getProductDto().getProductDetail()); // 수정글 내용 해석
-		for(Element el : afterDocument.select(".board-attach")) { // .product-attach 찾아서 반복해라
-			String keyStr = el.attr("data-key"); // data-key 속성 추출
-			int key = Integer.parseInt(keyStr); // int로 변환
-			after.add(key); // 저장소에 추가
+		int attachListSize = requestVO.getAttachList().size();
+		for(int i=0; i<attachListSize; i++) {
+			int attachmentNo = attachmentService.save(requestVO.getAttachList().get(i));
+			after.add(attachmentNo); // 저장소에 추가
 		}
 		
 		// 수정전 - 수정후 계산
@@ -148,10 +148,9 @@ public class ProductRestController {
 		
 		// 상품 정보 수정
 		// 글처리 다했으므로 글이 없는지 파악할 필요가 없다
-		productDao.update(RequestVo.getProductDto());
-		
-		
-		
+		productDao.update(requestVO.getProductDto());
+
+	
 	}
 	
 	// 상품 정보 삭제
@@ -160,7 +159,18 @@ public class ProductRestController {
 		ProductDto productDto = productDao.selectOne(productNo);
 		if(productDto == null) throw new TargetNotFoundException("존재하지 않는 상품 번호");
 		
+		// 1. select attachment from product_image where product = #{product}
+		// 를 이용하여 attachmentNo를 조사후 list화 한다
+		// 2. 리스트 사이즈 만큼 반복문 돌리면서 삭제
 		
+		List<Integer> list = productDao.findImages(productNo);
+		for(int i=0; i<list.size(); i++) {
+			System.out.println("지워지는번호 : "+list.get(i));
+			attachmentService.delete(list.get(i));
+		}
+		
+		productDao.delete(productNo); // 상품 정보 삭제
+		productDao.deleteImage(productNo); // 연결 테이블 정보 삭제
 	}
 	
 }

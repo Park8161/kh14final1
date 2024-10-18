@@ -61,9 +61,21 @@ public class ProductDao {
 		return sqlSession.selectOne("product.detail", productNo);
 	}
 
+	// 수정
 	public boolean update(ProductDto productDto) {
 		return sqlSession.update("product.edit", productDto) > 0;		
 	}
+	
+	// 삭제 - 상품 정보
+	public boolean delete(int productNo) {
+		return sqlSession.delete("product.remove", productNo) > 0;
+	}
+	
+	// 삭제 - 이미지 연결 테이블 정보
+	public boolean deleteImage(int productNo) {
+		return sqlSession.delete("product.removeImage", productNo) > 0;
+	}
+
 
 	
 	
