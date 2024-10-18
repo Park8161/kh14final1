@@ -73,7 +73,7 @@ public class AttachmentService {
 		
 		// DB 삭제
 		attachmentDao.delete(attachmentNo);
-		
+//		System.out.println(attachmentNo+"번 삭제 완료!");
 	}
 	
 	public ResponseEntity<ByteArrayResource> find(int attachmentNo) throws IOException {
