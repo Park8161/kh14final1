@@ -9,5 +9,6 @@ import lombok.Data;
 @Data
 public class ProductDetailResponseVO {
 	private ProductDto productDto;
+	private CategoryNameVO categoryNameVO;
 	private List<Integer> images;
 }
