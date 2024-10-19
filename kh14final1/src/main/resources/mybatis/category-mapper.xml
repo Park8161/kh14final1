@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="category">
+	
+	<!-- 상세 : 대중소분류 카테고리 이름 나오게 조회 -->
+  	<select id="nameList" resultType="categoryNameVO">
+  		select 
+  			C3.category_name "category3rd", 
+  			C2.category_name "category2nd", 
+  			C1.category_name "category1st" 
+		from product P 
+			left outer join category C3 on P.product_category = C3.category_no
+				left outer join category C2 on C3.category_upper = C2.category_no
+					left outer join category C1 on C2.category_upper = C1.category_no
+		where P.product_no = #{productNo}
+  	</select>
+  	
+  	<!-- 등록 -->
+  	<insert id="insert">
+  		insert into category(
+  			category_no, category_name, category_group, category_upper, category_depth
+  		) 
+  		values(
+  			#{categoryNo}, #{categoryName}, #{categoryGroup},
+  			#{categoryUpper}, #{categoryDepth}
+  		)
+  	</insert>
+  	
+  	<!-- 목록 + 페이징 + 검색-->
+  	<select id="list" resultType="CategoryDto">
+  		<include refid="top-n-header"></include>
+  		select * from category
+  		<if test="column !=null and keyword !=null">
+  			where instr(${column}, #{keyword}) > 0
+  		</if>
+  		order by 
+  		<if test="column !=null and keyword !=null">
+			${column} asc,
+  		</if>
+  		category_no desc
+  		<include refid="top-n-footer"></include>
+  	</select>
+  	
+  	<!-- 목록 카운트 -->
+  	<select id="count" resultType="int">
+  		select count(*) from category
+  		<if test="column !=null and keyword !=null">
+  			where instr(${column}, #{keyword}) > 0
+  		</if>
+  		order by 
+  		<if test="column !=null and keyword !=null">
+			${column} asc,
+  		</if>
+  		category_no desc
+  	</select>
+  	
+  	<!-- 상세 -->
+  	<select id="detail" resultType="CategoryDto">
+  		select * from category where category_no = #{categoryNo}
+  	</select>
+  	
+  	<!-- 수정 -->
+  	<update id="update">
+  		update category
+  		<set>
+  			<if test="categoryName != null">category_name = #{categoryName}</if>
+  			<if test="categoryGroup != null">category_group = #{categoryGroup}</if>
+  			<if test="categoryUpper != null">category_upper = #{categoryUpper}</if>
+  			<if test="categoryDepth != null">category_depth = #{categoryDepth}</if>
+  		</set>
+  		where category_no = #{categoryNo}
+  	</update>
+  	
+  	<!-- 삭제 -->
+  	<delete id="delete">
+  		delete category where category_no = #{categoryNo}
+  	</delete>
+  	
+  	
+  	<!-- 자주 사용하는(ex : Top N Query (페이징)) 구문들을 보관해두고서 불러서 사용 - 구문의 조각은 <sql> 
+		태그로 작성 - 이 구문을 불러올 때는 <include>로 작성 - beginRow와 endRow가 있을 때만 구동되도록 설정 : 
+		유연하게 처리 -->
+	<sql id="top-n-header">
+		<if test="beginRow != null and endRow != null">
+			select * from (
+			select rownum rn, TMP.* from (
+		</if>
+	</sql>
+	<sql id="top-n-footer">
+		<if test="beginRow != null and endRow != null">
+			) TMP
+			) where rn between #{beginRow} and #{endRow}
+		</if>
+	</sql> 	
+	  	
+</mapper>
