@@ -50,6 +50,16 @@ public class ProductDao {
 	public List<ProductListVO> selectListByPaging(ProductListRequestVO requestVO){
 		return sqlSession.selectList("product.list", requestVO);
 	}
+
+	// 연관 상품 목록 조회
+	public List<ProductListVO> selectRelationList(int productNo, int productCategory){
+		Map<String, Object> params = new HashMap<>();
+		params.put("productNo", productNo);
+		params.put("productCategory", productCategory);
+		params.put("beginRow", 1);
+		params.put("endRow", 6);
+		return sqlSession.selectList("product.relation", params);
+	}
 	
 	// 목록 카운트
 	public int countWithPaging(ProductListRequestVO requestVO) {
@@ -60,7 +70,7 @@ public class ProductDao {
 	public ProductDto selectOne(int productNo) {
 		return sqlSession.selectOne("product.detail", productNo);
 	}
-
+	
 	// 수정
 	public boolean update(ProductDto productDto) {
 		return sqlSession.update("product.edit", productDto) > 0;		

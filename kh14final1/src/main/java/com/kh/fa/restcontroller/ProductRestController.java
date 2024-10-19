@@ -5,15 +5,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.kh.fa.dao.CategoryDao;
 import com.kh.fa.dao.MemberDao;
 import com.kh.fa.dao.ProductDao;
 import com.kh.fa.dto.MemberDto;
@@ -30,6 +28,7 @@ import com.kh.fa.dto.ProductDto;
 import com.kh.fa.error.TargetNotFoundException;
 import com.kh.fa.service.AttachmentService;
 import com.kh.fa.service.TokenService;
+import com.kh.fa.vo.CategoryNameVO;
 import com.kh.fa.vo.MemberClaimVO;
 import com.kh.fa.vo.ProductDetailResponseVO;
 import com.kh.fa.vo.ProductEditRequestVO;
@@ -50,6 +49,8 @@ public class ProductRestController {
 	private MemberDao memberDao;
 	@Autowired
 	private AttachmentService attachmentService;
+	@Autowired
+	private CategoryDao categoryDao;
 	
 	// 등록
 	@Transactional
@@ -99,17 +100,35 @@ public class ProductRestController {
 		
 		return responseVO;
 	}
+
+	// 연관 상품 목록
+	@GetMapping("/relation/{productNo}/{productCategory}")
+	public ProductListResponseVO relation(@PathVariable int productNo, @PathVariable int productCategory) {
+		ProductDto productDto = productDao.selectOne(productNo);
+		if(productDto == null) throw new TargetNotFoundException("존재하지 않는 상품 번호");
+		ProductListResponseVO responseVO = new ProductListResponseVO();
+		// 연관 상품 목록 추가
+		responseVO.setProductList(productDao.selectRelationList(productNo, productCategory));
+		// 페이징 아니고 그냥 5개만 보여줄거라 임의로 값을 넣어서 고정시킴
+		responseVO.setCount(6);
+		responseVO.setLast(true);
+		
+		return responseVO;
+	}	
 	
 	// 상세 정보 조회
-	@PostMapping("/detail/{productNo}")
+	@GetMapping("/detail/{productNo}")
 	public ProductDetailResponseVO detail(@PathVariable int productNo) {
 		ProductDto productDto = productDao.selectOne(productNo);
 		if(productDto == null) throw new TargetNotFoundException("존재하지 않는 상품 번호");
 		// 이 도서의 이미지 번호들을 조회하여 전달
 		List<Integer> images = productDao.findImages(productNo);
+		// 상품번호를 이용해 해당 상품의 대중소분류 카테고리 이름 조회
+		CategoryNameVO categoryNameVO = categoryDao.selectNameList(productNo);
 		
 		ProductDetailResponseVO responseVO = new ProductDetailResponseVO();
 		responseVO.setProductDto(productDto);
+		responseVO.setCategoryNameVO(categoryNameVO);
 		responseVO.setImages(images);
 		return responseVO; 	
 	}
