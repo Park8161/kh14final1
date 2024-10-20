@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.kh.fa.dto.ProductDto;
+import com.kh.fa.vo.ProductLikeListRequestVO;
 import com.kh.fa.vo.ProductListRequestVO;
 import com.kh.fa.vo.ProductListVO;
 
@@ -86,8 +87,20 @@ public class ProductDao {
 		return sqlSession.delete("product.removeImage", productNo) > 0;
 	}
 
-
+	// 상품 좋아요 갱신(최신화) 기능
+	public boolean updateLikes(int productNo) {
+		return sqlSession.update("product.likes", productNo) > 0;
+	}	
 	
+	// 좋아요 목록 + 페이징 
+	public List<ProductListVO> selectLikeList(String memberId) {
+		return sqlSession.selectList("product.likeList", memberId);
+	}
+	
+	// 좋아요 목록 카운트
+//	public int countWithLike(ProductLikeListRequestVO vo) {
+//		return sqlSession.selectOne("product.likeCount", vo);
+//	}
 	
 	
 	

@@ -20,6 +20,7 @@ import com.kh.fa.dao.BlockDao;
 import com.kh.fa.dao.CertDao;
 import com.kh.fa.dao.MemberDao;
 import com.kh.fa.dao.MemberTokenDao;
+import com.kh.fa.dao.ProductDao;
 import com.kh.fa.dto.BlockDto;
 import com.kh.fa.dto.CertDto;
 import com.kh.fa.dto.MemberDto;
@@ -40,6 +41,9 @@ import com.kh.fa.vo.MemberFindPwVO;
 import com.kh.fa.vo.MemberLoginRequestVO;
 import com.kh.fa.vo.MemberLoginResponseVO;
 import com.kh.fa.vo.MypageVO;
+import com.kh.fa.vo.ProductLikeListRequestVO;
+import com.kh.fa.vo.ProductListResponseVO;
+import com.kh.fa.vo.ProductListVO;
 
 import jakarta.mail.MessagingException;
 
@@ -64,6 +68,8 @@ public class MemberRestController {
 	private PasswordEncoder encoder;
 	@Autowired
 	private BlockDao blockDao;
+	@Autowired
+	private ProductDao productDao;
 	
 	// 여태까지 배운대로라면 복합검색도 GET으로 구현해야 한다
 	// 하지만 보내야 하는 데이터가 너무 많아서 GET으로 구현하는 것은 어려움이 있다
@@ -158,20 +164,29 @@ public class MemberRestController {
 	
 	// 마이페이지 - 회원 정보 뿐만 아니라 거래 이력 및 차단 목록 등의 조회를 위하여 Dto가 아닌 VO를 전송
 	@GetMapping("/mypage")
-	public MypageVO mypage(@RequestHeader("Authorization") String accessToken) {
+	public MemberDto mypage(@RequestHeader("Authorization") String accessToken) {
 		if(tokenService.isBearerToken(accessToken) == false) throw new TargetNotFoundException("유효하지 않은 토큰");
 		MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(accessToken));
 		
 		MemberDto memberDto = memberDao.selectOne(claimVO.getMemberId());
 		if(memberDto == null) throw new TargetNotFoundException("존재하지 않는 회원");
 		memberDto.setMemberPw(null); // 비밀번호 제거
-//		List<ProductDto> productList = productDao.selectList(claimVO.getMemberId()); 
-//		if(productList == null) throw new TargetNotFoundException("존재하지 않는 상품 목록");
+		return memberDto;
+	}
+	
+	// 내가 액티브한 상품 목록들 조회
+	@GetMapping("/active")
+	public MypageVO active(@RequestHeader("Authorization") String token) {
+		// 토큰 변환
+		MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(token));
+		// 유효 검증
+		MemberDto memberDto = memberDao.selectOne(claimVO.getMemberId());
+		if(memberDto == null) throw new TargetNotFoundException("존재하지 않는 회원");
 		
-		MypageVO response = new MypageVO();
-		response.setMemberDto(memberDto);
-//		response.setProductList(productList);
-		return response;
+		// 좋아요 누른 상품 목록 전송 준비
+		MypageVO mypageVO = new MypageVO();
+		mypageVO.setLikeList(productDao.selectLikeList(claimVO.getMemberId()));
+		return mypageVO;
 	}
 	
 	// 마이페이지 - 다른 회원 정보 조회를 위해 남겨둠
@@ -346,7 +361,7 @@ public class MemberRestController {
 		blockDao.cancelBlock(blockDto); 
 	}
 	
-//	타회원 상세정보 조회
+	// 타회원 상세정보 조회
 	@GetMapping("/{memberId}")
 	public MemberDetailVO detail(
 			@PathVariable String memberId) {
@@ -356,7 +371,7 @@ public class MemberRestController {
 		return memberDetailVO;
 	}
 
-//	특정 회원의 상품목록 조회	
+	// 특정 회원의 상품목록 조회	
 	@GetMapping("/product/{memberId}")
 	public List<ProductDto> memberProductList(@PathVariable String memberId){
 		if(memberDao.selectMemberProduct(memberId)==null) {

@@ -22,7 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.fa.dao.CategoryDao;
 import com.kh.fa.dao.MemberDao;
-import com.kh.fa.dao.ProductDao;
+import com.kh.fa.dao.ProductDao;import com.kh.fa.dao.ProductLikeDao;
 import com.kh.fa.dto.MemberDto;
 import com.kh.fa.dto.ProductDto;
 import com.kh.fa.error.TargetNotFoundException;
@@ -33,6 +33,7 @@ import com.kh.fa.vo.MemberClaimVO;
 import com.kh.fa.vo.ProductDetailResponseVO;
 import com.kh.fa.vo.ProductEditRequestVO;
 import com.kh.fa.vo.ProductInsertRequestVO;
+import com.kh.fa.vo.ProductLikeVO;
 import com.kh.fa.vo.ProductListRequestVO;
 import com.kh.fa.vo.ProductListResponseVO;
 
@@ -51,6 +52,8 @@ public class ProductRestController {
 	private AttachmentService attachmentService;
 	@Autowired
 	private CategoryDao categoryDao;
+	@Autowired
+	private ProductLikeDao productLikeDao;
 	
 	// 등록
 	@Transactional
@@ -102,13 +105,13 @@ public class ProductRestController {
 	}
 
 	// 연관 상품 목록
-	@GetMapping("/relation/{productNo}/{productCategory}")
-	public ProductListResponseVO relation(@PathVariable int productNo, @PathVariable int productCategory) {
+	@GetMapping("/relation/{productNo}")
+	public ProductListResponseVO relation(@PathVariable int productNo) {
 		ProductDto productDto = productDao.selectOne(productNo);
 		if(productDto == null) throw new TargetNotFoundException("존재하지 않는 상품 번호");
 		ProductListResponseVO responseVO = new ProductListResponseVO();
 		// 연관 상품 목록 추가
-		responseVO.setProductList(productDao.selectRelationList(productNo, productCategory));
+		responseVO.setProductList(productDao.selectRelationList(productNo, productDto.getProductCategory()));
 		// 페이징 아니고 그냥 5개만 보여줄거라 임의로 값을 넣어서 고정시킴
 		responseVO.setCount(6);
 		responseVO.setLast(true);
@@ -198,6 +201,52 @@ public class ProductRestController {
 		
 		productDao.delete(productNo); // 상품 정보 삭제
 		productDao.deleteImage(productNo); // 연결 테이블 정보 삭제
+	}
+	
+	// 상품 좋아요 확인 매핑
+	@GetMapping("/check/{productNo}")
+	public ProductLikeVO check(@RequestHeader("Authorization") String token, @PathVariable int productNo) {
+		// 토큰 변환
+		MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(token));
+		// 유효 검증
+		MemberDto memberDto = memberDao.selectOne(claimVO.getMemberId());
+		if(memberDto == null) throw new TargetNotFoundException("존재하지 않는 회원");
+		
+		ProductLikeVO productLikeVO = new ProductLikeVO();
+		
+		// 설정
+		productLikeVO.setChecked(productLikeDao.check(productNo, claimVO.getMemberId()));
+		productLikeVO.setCount(productLikeDao.count(productNo));
+		
+		return productLikeVO;
+	}
+	
+	// 상품 좋아요 및 취소 기능
+	@GetMapping("/like/{productNo}")
+	public ProductLikeVO like(@RequestHeader("Authorization") String token, @PathVariable int productNo) {
+		// 토큰 변환
+		MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(token));
+		// 유효 검증
+		MemberDto memberDto = memberDao.selectOne(claimVO.getMemberId());
+		if(memberDto == null) throw new TargetNotFoundException("존재하지 않는 회원");
+		
+		boolean isChecked = productLikeDao.check(productNo, claimVO.getMemberId());
+		if(isChecked) { // 삭제(등록 이력 있음)
+			productLikeDao.delete(claimVO.getMemberId(), productNo);
+		}
+		else { // 등록(등록 이력 없음)
+			productLikeDao.insert(claimVO.getMemberId(), productNo);
+		}
+		
+		// 갱신(최적화) - 반정규화
+		productDao.updateLikes(productNo);
+		
+		// 설정
+		ProductLikeVO productLikeVO = new ProductLikeVO();
+		productLikeVO.setChecked(isChecked);
+		productLikeVO.setCount(productLikeDao.count(productNo));
+		
+		return productLikeVO;
 	}
 	
 }
