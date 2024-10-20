@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class CategoryDto {
-	private int categorytNo;
+	private int categoryNo;
 	private String categoryName;
 	
 	private int categoryGroup; // 분류그룹번호
