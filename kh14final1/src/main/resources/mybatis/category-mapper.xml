@@ -7,7 +7,7 @@
 <mapper namespace="category">
 	
 	<!-- 상세 : 대중소분류 카테고리 이름 나오게 조회 -->
-  	<select id="nameList" resultType="categoryNameVO">
+  	<select id="nameList" resultType="CategoryNameVO">
   		select 
   			C3.category_name "category3rd", 
   			C2.category_name "category2nd", 
@@ -30,8 +30,13 @@
   		)
   	</insert>
   	
-  	<!-- 목록 + 페이징 + 검색-->
+  	<!-- 단순 목록 조회 -->
   	<select id="list" resultType="CategoryDto">
+  		select * from category order by category_no asc
+  	</select>
+  	
+  	<!-- 목록 + 페이징 + 검색-->
+  	<select id="listByPaging" resultType="CategoryDto">
   		<include refid="top-n-header"></include>
   		select * from category
   		<if test="column !=null and keyword !=null">

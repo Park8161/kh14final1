@@ -26,9 +26,14 @@ public class CategoryDao {
 		sqlSession.insert("category.insert", categoryDto);
 	}
 	
+	// 단순 목록 조회
+	public List<CategoryDto> selectList() {
+		return sqlSession.selectList("category.list");
+	}
+	
 	// 목록 + 페이징 + 검색
-	public List<CategoryDto> selectList(CategoryListRequestVO requestVO) {
-		return sqlSession.selectList("category.list", requestVO);
+	public List<CategoryDto> selectListByPaging(CategoryListRequestVO requestVO) {
+		return sqlSession.selectList("category.listByPaging", requestVO);
 	}
 	
 	// 목록카운트

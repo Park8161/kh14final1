@@ -1,5 +1,7 @@
 package com.kh.fa.restcontroller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -31,6 +33,13 @@ public class AdminCategoryRestController {
 	}
 	
 	// 목록
+	@GetMapping("/listP")
+	public List<CategoryDto> listP() {
+		List<CategoryDto> list = categoryDao.selectList();
+		return list;
+	}
+	
+	// 목록 + 페이징 + 검색
 	@PostMapping("/list")
 	public CategoryListResponsVO list(@RequestBody CategoryListRequestVO requestVO) {
 		// 페이징 정보 정리
@@ -38,7 +47,7 @@ public class AdminCategoryRestController {
 		boolean last = requestVO.getEndRow() == null || count <= requestVO.getEndRow();
 		// 출력 클래스에 입력
 		CategoryListResponsVO responseVO = new CategoryListResponsVO();
-		responseVO.setCategoryList(categoryDao.selectList(requestVO));
+		responseVO.setCategoryList(categoryDao.selectListByPaging(requestVO));
 		responseVO.setCount(count);
 		responseVO.setLast(last);
 		
