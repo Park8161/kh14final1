@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="review">
+
+	<!-- 시퀀스 -->
+	<select id="sequence" resultType="int">
+		select review_seq.nextval from dual
+	</select>
+
+	<!-- 등록 -->
+	<insert id="insert">
+		insert into review(
+			review_no, review_target, review_writer, review_product, review_content, review_score
+		) values(
+			#{reviewNo}, #{reviewTarget}, #{reviewWriter}, #{reviewProduct}, #{reviewContent}, #{reviewScore}
+		)
+	</insert>
+	
+	<!-- 목록 + 검색 -->
+	<select id="list" resultType="ReviewDto">
+		select * from review 
+		<if test="column != null and keyword != null">
+			where instr(${column}, #{keyword}) > 0
+		</if>
+		order by review_no desc
+	</select>
+	
+	<!-- 목록 + 페이징 + 검색 -->
+	<!-- <select id="" resultType="">
+		
+	</select> -->
+	
+	<!-- 상세 -->
+	<select id="detail" resultType="ReviewDto">
+		select * from review where review_no = #{reviewNo}
+	</select>
+	
+	<!-- 수정 -->
+	<update id="update">
+		update review 
+		<set>
+			<if test="reviewTarget != null">review_target = #{reviewTarget}</if>
+			<if test="reviewWriter != null">review_writer = #{reviewWriter}</if>
+			<if test="reviewProduct != null">review_product = #{reviewProduct}</if>
+			<if test="reviewContent != null">review_content = #{reviewContent}</if>
+			<if test="reviewScore != null">review_score = #{reviewScore}</if>
+		</set> 
+		where review_no = #{reviewNo}
+	</update>
+	
+	<!-- 삭제 -->
+	<delete id="delete">
+		delete review where review_no = #{reviewNo}
+	</delete>
+
+</mapper>
