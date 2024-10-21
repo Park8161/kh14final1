@@ -6,6 +6,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import com.kh.fa.dto.ProductDto;
 import com.kh.fa.dto.RoomDto;
 import com.kh.fa.dto.RoomMemberDto;
 import com.kh.fa.vo.RoomVO;
@@ -15,6 +16,9 @@ public class RoomDao {
 	
 	@Autowired
 	private SqlSession sqlSession;
+	
+	@Autowired
+	private ProductDao productDao;
 	
 	public int sequence() {
 		return sqlSession.selectOne("room.sequence");
@@ -66,6 +70,16 @@ public class RoomDao {
 	public boolean isRoomExist(RoomMemberDto roomMemberDto) {
 		int result = sqlSession.selectOne("roomMember.isRoomExist", roomMemberDto);
 		return result > 0;
+	}
+	
+	public int findRoomNo(RoomMemberDto roomMemberDto){
+		int result = sqlSession.selectOne("roomMember.findRoomNo", roomMemberDto);
+		return result;
+	}
+
+	public ProductDto getProductInfo(int roomNo) {
+		int productNo = sqlSession.selectOne("roomMember.findProductNo", roomNo);
+		return productDao.selectOne(productNo);
 	}
 	
 	

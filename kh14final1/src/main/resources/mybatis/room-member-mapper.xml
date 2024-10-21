@@ -8,8 +8,8 @@
 	
 	<!-- 입장(C) -->
 	<insert id="enter">
-		insert into room_member (room_no, member_id)
-		values (#{roomNo}, #{memberId})
+		insert into room_member (room_no, member_id, product_no)
+		values (#{roomNo}, #{memberId}, #{productNo})
 	</insert>
 	
 	<!-- 퇴장(D) -->
@@ -24,6 +24,16 @@
 
 	<select id="isRoomExist" resultType="int">
 		select count(*) from room_member where member_id = #{memberId} and product_no = #{productNo}
+	</select>
+	
+	<select id="findRoomNo" resultType="int">
+		select room_no from room_member where member_id = #{memberId} and product_no = #{productNo}
+	</select>
+	
+	<select id="findProductNo" resultType="int">
+		SELECT DISTINCT product_no 
+		FROM room_member 
+		WHERE room_no = #{roomNo}
 	</select>
 	
 </mapper>
