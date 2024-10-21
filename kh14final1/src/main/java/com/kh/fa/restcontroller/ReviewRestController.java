@@ -22,7 +22,7 @@ import com.kh.fa.error.TargetNotFoundException;
 @CrossOrigin
 @RestController
 @RequestMapping("/review")
-public class ReviewController {
+public class ReviewRestController {
 	
 	@Autowired
 	private ReviewDao reviewDao;
