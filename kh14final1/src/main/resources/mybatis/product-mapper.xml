@@ -98,7 +98,7 @@
   		update product
   			set product_name=#{productName}, product_category=#{productCategory},
 	  			product_price=#{productPrice}, product_detail=#{productDetail},
-	  			product_state=#{productState}, product_qty=#{productQty}
+	  			product_qty=#{productQty}
   			where product_no = #{productNo}
   	</update>
   

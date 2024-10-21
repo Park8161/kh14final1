@@ -4,7 +4,8 @@ import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
 
-import com.kh.fa.dto.ProductDto;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.kh.fa.advice.JsonEmptyStringToNullDeserializer;
 
 import lombok.Data;
 
@@ -15,7 +16,7 @@ public class ProductEditRequestVO {
 	private String productName;
 	private int productPrice;
 	private String productDetail;
-	private String productState;
+//	private String productState;
 	private int productQty;
 	private int productCategory;
 
