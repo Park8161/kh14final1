@@ -102,6 +102,10 @@ public class ProductDao {
 //		return sqlSession.selectOne("product.likeCount", vo);
 //	}
 	
+	// 내 상품 목록 조회 : 페이징X 검색X
+	public List<ProductListVO> selectMyList(String memberId) {
+		return sqlSession.selectList("product.myList",memberId);
+	}
 	
 	
 }
