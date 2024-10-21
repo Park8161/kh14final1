@@ -23,5 +23,5 @@ public class MemberDto {
 	private Date memberJoin;
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
 	private Date memberLogin;
-	
+	private int memberReliability;
 }
