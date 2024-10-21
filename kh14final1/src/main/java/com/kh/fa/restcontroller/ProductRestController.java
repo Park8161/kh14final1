@@ -22,7 +22,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.fa.dao.CategoryDao;
 import com.kh.fa.dao.MemberDao;
-import com.kh.fa.dao.ProductDao;import com.kh.fa.dao.ProductLikeDao;
+import com.kh.fa.dao.ProductDao;
+import com.kh.fa.dao.ProductLikeDao;
 import com.kh.fa.dto.MemberDto;
 import com.kh.fa.dto.ProductDto;
 import com.kh.fa.error.TargetNotFoundException;
@@ -145,6 +146,7 @@ public class ProductRestController {
 		ProductDto originDto = productDao.selectOne(requestVO.getProductNo());
 		if(originDto == null) throw new TargetNotFoundException("존재하지 않는 상품 번호");
 		
+//		System.out.println(requestVO.getProductState());
 		// 수정 전 
 		Set<Integer> before = new HashSet<>();
 		List<Integer> beforeList = productDao.findImages(originDto.getProductNo());
@@ -176,11 +178,12 @@ public class ProductRestController {
 		productDto.setProductMember(requestVO.getProductMember());
 		productDto.setProductPrice(requestVO.getProductPrice());
 		productDto.setProductDetail(requestVO.getProductDetail());
-		productDto.setProductState(requestVO.getProductState());
+		// productDto.setProductState(requestVO.getProductState());
 		productDto.setProductQty(requestVO.getProductQty());
 		productDto.setProductCategory(requestVO.getProductCategory());
-//		System.out.println("여기야!! : "+productDto);
+
 		productDao.update(productDto);
+	
 	}
 	
 	// 상품 정보 삭제

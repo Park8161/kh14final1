@@ -13,6 +13,6 @@ public class ProductInsertRequestVO {
 	private int productPrice;
 	private String productDetail;
 	private int productQty;
-	
+
 	private List<MultipartFile> attachList;
 }
