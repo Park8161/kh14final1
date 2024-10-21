@@ -144,6 +144,10 @@ public class MemberDao {
 	public void freeMember(BanDto banDto) {
 		 sqlSession.insert("ban.free", banDto);
 	}
+	//차단 상태 조회
+		public BanDto selectBanCheck(String memberId) {
+			return sqlSession.selectOne("ban.selectBanCheck", memberId);
+		}
 	
 	
 }

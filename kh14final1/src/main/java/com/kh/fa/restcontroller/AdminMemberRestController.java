@@ -27,7 +27,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 @RestController
 @RequestMapping("/admin/member")
 @CrossOrigin(origins = {"http://localhost:3000"})
-public class adminRestController {
+public class AdminMemberRestController {
 	
 	@Autowired
 	private MemberDao memberDao;
@@ -84,19 +84,20 @@ public class adminRestController {
 		}
 		
 	//회원 차단 등록
-	@PostMapping("/bann/")
+	@PostMapping("/bann")
 	public ResponseEntity<String> banMember(@RequestBody BanDto banDto) {
-		  memberDao.banMember(banDto);	
+		  memberDao.banMember(banDto);
 		  
 	return ResponseEntity.ok("회원이 차단되었습니다.");		
 	}
 	
 	//회원 차단 해제
-	@PostMapping("/free/")
+	@PostMapping("/free")
 	public ResponseEntity<String> freeMember(@RequestBody BanDto banDto) {
 	       memberDao.freeMember(banDto);
 	       
-	   return ResponseEntity.ok("회원이 차단 해제되었습니다.");
-	     
+	   return ResponseEntity.ok("회원이 차단 해제되었습니다.");	     
 	}
+	
+	
 }

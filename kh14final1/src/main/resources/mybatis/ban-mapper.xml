@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  <mapper namespace="ban">
+  	<!-- 회원 차단 -->
+  	<insert id="bann">
+  		insert into ban(
+  			ban_no, ban_type, ban_memo, ban_time, ban_target
+  		)
+  		values(
+  			ban_seq.nextval, '차단', #{banMemo}, sysdate, #{banTarget}
+  		)
+  	</insert>
+  	
+  	<!-- 회원 차단 해제 -->
+  	  	<insert id="free">
+  		insert into ban(
+  			ban_no, ban_type, ban_memo, ban_time, ban_target
+  		)
+  		values(
+  			ban_seq.nextval, '차단', #{banMemo}, sysdate, #{banTarget}
+  		)
+  	</insert>
+  	
+  	<!-- 차단 조회 -->
+  	<select id="selectBanCheck" resultType="com.kh.fa.dto.BanDto">
+        SELECT *
+        FROM (
+            SELECT *
+            FROM ban B
+            WHERE B.ban_target = #{memberId}
+            AND B.ban_type = '차단'
+            AND SYSDATE >= B.ban_time
+            ORDER BY B.ban_no DESC
+        ) 
+        WHERE ROWNUM = 1
+    </select>
+  </mapper>
