@@ -133,7 +133,7 @@
   		) where product_no = #{productNo}
   	</update>
   	
-  	<!-- 좋아요 목록 + 페이징 -->
+  	<!-- 좋아요 목록 -->
   	<select id="likeList" resultType="ProductListVO">
 		select P.*, I.attachment 
 		from product P 
@@ -148,7 +148,7 @@
 		order by P.product_no desc
   	</select>
   	
-  	<!--  -->
+  	<!-- 좋아요 목록 페이징 카운트 쓸려다 안씀 -->
   	<select id="likeCount" resultType="int">
   		select count(*) 
   		from product P where P.product_no in (
@@ -171,6 +171,18 @@
   		product_no desc
   	</select>
   	
+  	<!-- 내 상품 목록 : 페이징 검색 없음 -->
+  	<select id="myList" resultType="ProductListVO">
+  		select P.*, I.attachment from product P 
+  		left outer join product_image I on P.product_no = I.product 
+  		where 
+			I.attachment = (
+  				select min(attachment) from product_image 
+  				where product = P.product_no
+  			)
+  		and product_member = #{memberId}
+  		order by product_no desc
+  	</select>
   	
   	<!-- 자주 사용하는(ex : Top N Query (페이징)) 구문들을 보관해두고서 불러서 사용 - 구문의 조각은 <sql> 
 		태그로 작성 - 이 구문을 불러올 때는 <include>로 작성 - beginRow와 endRow가 있을 때만 구동되도록 설정 : 

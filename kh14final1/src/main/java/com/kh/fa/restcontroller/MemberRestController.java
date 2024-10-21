@@ -174,7 +174,7 @@ public class MemberRestController {
 		return memberDto;
 	}
 	
-	// 내가 액티브한 상품 목록들 조회
+	// 내가 액티브한 상품 목록들 조회 >> 액티브 : 좋아요, 등록상품,
 	@GetMapping("/active")
 	public MypageVO active(@RequestHeader("Authorization") String token) {
 		// 토큰 변환
@@ -183,9 +183,10 @@ public class MemberRestController {
 		MemberDto memberDto = memberDao.selectOne(claimVO.getMemberId());
 		if(memberDto == null) throw new TargetNotFoundException("존재하지 않는 회원");
 		
-		// 좋아요 누른 상품 목록 전송 준비
+		// 액티브 상품 목록 전송 준비
 		MypageVO mypageVO = new MypageVO();
-		mypageVO.setLikeList(productDao.selectLikeList(claimVO.getMemberId()));
+		mypageVO.setLikeList(productDao.selectLikeList(claimVO.getMemberId())); // 좋아요 누른 상품 목록
+		mypageVO.setMyList(productDao.selectMyList(claimVO.getMemberId())); // 내가 등록한 상품 목록
 		return mypageVO;
 	}
 	
