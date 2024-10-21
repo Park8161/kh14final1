@@ -46,26 +46,6 @@
   		delete member where member_id = #{memberId}
   	</delete>
   	
-  	<!-- 회원 차단 -->
-  	<insert id="bann">
-  		insert into ban(
-  			ban_no, ban_type, ban_memo, ban_time, ban_target
-  		)
-  		values(
-  			ban_seq.nextval, '차단', #{banMemo}, sysdate, 
-  			#{banTarget} 
-  		)
-  	</insert>
   	
-  	<!-- 회원 차단 해제 -->
-  	<insert id="free">
-  		insert into ban(
-  			ban_no, ban_type, ban_memo, ban_time, ban_target
-  		)
-  		values(
-  			ban_seq.nextval, '해제', #{banMemo}, sysdate,
-  			#{banTarget}
-  		)
-  	</insert>
   	
   </mapper>

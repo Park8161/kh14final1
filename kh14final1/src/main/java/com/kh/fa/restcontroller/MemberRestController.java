@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +22,7 @@ import com.kh.fa.dao.CertDao;
 import com.kh.fa.dao.MemberDao;
 import com.kh.fa.dao.MemberTokenDao;
 import com.kh.fa.dao.ProductDao;
+import com.kh.fa.dto.BanDto;
 import com.kh.fa.dto.BlockDto;
 import com.kh.fa.dto.CertDto;
 import com.kh.fa.dto.MemberDto;
@@ -100,7 +102,7 @@ public class MemberRestController {
 		
 		// 비밀번호 비교(암호화 여부에 따라 코드가 달라질 수 있음에 주의)
 //		boolean isValid = vo.getMemberPw().equals(memberDto.getMemberPw());
-		boolean isValid = encoder.matches(vo.getMemberPw(), memberDto.getMemberPw()); // 암호화시 사용
+		boolean isValid = encoder.matches(vo.getMemberPw(), memberDto.getMemberPw()); // 암호화시 사용  
 		
 		if(isValid) { // 로그인 성공
 			MemberLoginResponseVO response = new MemberLoginResponseVO();
@@ -380,5 +382,13 @@ public class MemberRestController {
 		List<ProductDto> list = memberDao.selectMemberProduct(memberId); 
 		return list;
 	}
+	
+	//차단 상태 조회 매핑
+		@GetMapping("/banCheck/{memberId}")
+		public ResponseEntity<Boolean> banCheck(@PathVariable String memberId) {
+			BanDto banDto = memberDao.selectBanCheck(memberId);
+			
+			return ResponseEntity.ok(banDto != null && "차단".equals(banDto.getBanType()));
+		}
 
 }
