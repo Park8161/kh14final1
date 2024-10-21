@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.kh.fa.dao.ProductDao;
 import com.kh.fa.dao.RoomDao;
+import com.kh.fa.dto.ProductDto;
 import com.kh.fa.dto.RoomDto;
 import com.kh.fa.dto.RoomMemberDto;
 import com.kh.fa.error.TargetNotFoundException;
@@ -28,35 +30,58 @@ public class RoomRestController {
 	
 	@Autowired
 	private RoomDao roomDao;
+	
 	@Autowired
 	private TokenService tokenService;
 	
-	@PostMapping("/")
-	public void insert(@RequestBody RoomMemberDto roomMemberDto,
+	@Autowired 
+	private ProductDao productDao;
+	
+	
+//	채팅방 생성 or 입장 
+	@PostMapping("/{productNo}")
+	public int insert(@PathVariable int productNo,
 			@RequestHeader("Authorization") String token
 			){
 		MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(token));
+		RoomMemberDto roomBuyerDto = new RoomMemberDto();
+		ProductDto productDto = productDao.selectOne(productNo);
 		
-//		확인을 위해 필요한 데이터: 접속자 id, 상품 번호
-//		해당 상품에 대한 채팅 여부 확인 
-		boolean isRoomExist = roomDao.isRoomExist(roomMemberDto);		
-		if(isRoomExist) {
-//			방 입장
+//		판매자 아이디 추출
+		String sellerId = productDto.getProductMember();
+		
+		if(sellerId == null) throw new TargetNotFoundException("판매자가 존재하지 않습니다.");
+		
+//		확인을 위해 필요한 데이터: 접속자(구매자) id, 상품 번호
+		roomBuyerDto.setMemberId(claimVO.getMemberId()); // 아이디 설정
+		roomBuyerDto.setProductNo(productNo);
+		
+//		해당 상품에 대한 채팅 기록이 존재하는지 확인 
+		boolean isRoomExist = roomDao.isRoomExist(roomBuyerDto);		
+		if(!isRoomExist) { //방이 존재하지 않을 경우 방 생성
+			int roomNo = roomDao.sequence();
+			RoomDto roomDto = new RoomDto();
+			RoomMemberDto roomSellerDto = new RoomMemberDto();
+			
+			roomDto.setRoomNo(roomNo);
+			roomDto.setRoomName(sellerId); //방이름은 판매자 아이디로 자동 설정
+			
+			roomBuyerDto.setRoomNo(roomNo);
+			
+			roomSellerDto.setRoomNo(roomNo);
+			roomSellerDto.setMemberId(sellerId);
+			roomSellerDto.setProductNo(productNo);
+			
+			roomDao.insert(roomDto);
+			roomDao.enter(roomBuyerDto);
+			roomDao.enter(roomSellerDto);
+			
+			return roomNo;
 			
 		}
-		else {
-			int roomNo = roomDao.sequence();
-			roomMemberDto.setRoomNo(roomNo);
-			roomMemberDto.setMemberId(claimVO.getMemberId()); // 아이디 설정
-			roomMemberDto.setProductNo(roomNo);
-//			방 생성 	
-		}
+		 //방이 존재할 경우 방에 입장
+		return roomDao.findRoomNo(roomBuyerDto);
 		
-//		roomDto.setRoomNo(roomNo);
-//		roomDao.insert(roomDto);
-//		
-//		roomDao.enter(roomMemberDto); // 등록
-//		return roomDao.selectOne(roomNo); // DB에서 만든 정보까지 포함해서 반환
 	}
 	
 	@GetMapping("/")
@@ -106,6 +131,13 @@ public class RoomRestController {
 		boolean canEnter = roomDao.check(roomMemberDto);
 		
 		return canEnter;
+	}
+	
+	@GetMapping("/productInfo/{roomNo}")
+	public ProductDto getProductInfo(@PathVariable int roomNo) {
+//		roomNo -> productNo -> productInfo
+		ProductDto productDto = roomDao.getProductInfo(roomNo);
+		return productDto;
 	}
 	
 }
