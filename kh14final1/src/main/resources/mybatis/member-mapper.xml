@@ -341,6 +341,23 @@
 		where member_id = #{memberId}  
 	</update>
 	
+	<update id="editOne">
+		update member
+		<set>
+			<if test="memberName != null">member_name = #{memberName},</if>
+			<if test="memberLevel != null">member_level = #{memberLevel},</if>
+			<if test="memberEmail != null">member_email = #{memberEmail},</if>
+			<if test="memberPost != null and memberAddress1 != null and memberAddress2 != null">
+				member_post = #{memberPost}, member_address1 = #{memberAddress1}, member_address2 = #{memberAddress2},
+			</if>
+			<if test="memberContact != null">member_contact = #{memberContact},</if>
+			<if test="memberBirth != null">member_birth = #{memberBirth},</if>
+			<if test="memberPoint != null">member_point = #{memberPoint},</if>
+			<if test="memberReliability != null">member_reliability = #{memberReliability},</if>
+		</set>
+		where member_id = #{memberId} 
+	</update>
+	
 	<!-- 수정 by 관리자 -->
 	<update id="editByAdmin">
 		update member

@@ -53,6 +53,11 @@ public class MemberDao {
 		return sqlSession.update("member.edit", memberDto) > 0;
 	}
 	
+	// 정보 수정 patchmapping
+	public boolean updateOne(MemberDto memberDto) {
+		return sqlSession.update("member.editOne", memberDto) > 0;
+	}
+	
 	// 최종 로그인 시각 갱신
 	public boolean updateMemberLogin(String memberId) {
 		return sqlSession.update("member.login", memberId) > 0;
@@ -140,14 +145,15 @@ public class MemberDao {
 		 sqlSession.insert("ban.bann", banDto);
 	}
 	
-	//회원 차단해제(관리자
+	//회원 차단해제(관리자)
 	public void freeMember(BanDto banDto) {
 		 sqlSession.insert("ban.free", banDto);
 	}
+	
 	//차단 상태 조회
-		public BanDto selectBanCheck(String memberId) {
-			return sqlSession.selectOne("ban.selectBanCheck", memberId);
-		}
+	public BanDto selectBanCheck(String memberId) {
+		return sqlSession.selectOne("ban.selectBanCheck", memberId);
+	}
 	
 	
 }

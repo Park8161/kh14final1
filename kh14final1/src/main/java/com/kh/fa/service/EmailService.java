@@ -48,14 +48,14 @@ public class EmailService {
 		MimeMessageHelper helper = new MimeMessageHelper(message, false, "UTF-8"); // 메세지에 정보를 설정해주는 도우미 설정
 		// 도우미를 통해 메세지에 정보 설정
 		helper.setTo(email); // 메일을 보낼 이메일
-		helper.setSubject("[KH정보교육원] 인증번호 안내"); // 제목
+		helper.setSubject("[KH중고나라] 인증번호 안내"); // 제목
 //		message.setText("인증번호는 [ "+value+" ] 입니다"); // 내용
 //		message.setCc("nk5959@naver.com"); // 참조
 //		message.setBcc("nk5959@naver.com"); // 숨은참조
 		
 		// 외부에 만들어놓은 HTML 문서를 불러와서 첨부
 		// - src에 만든 구성요소들을 쉽게 찾을 수 있도록 ClassPathResource라는 클래스를 제공
-		ClassPathResource template = new ClassPathResource("templates/email-cert.html");
+		ClassPathResource template = new ClassPathResource("templates/cert.html");
 		File target = template.getFile();
 		
 		StringBuffer buffer = new StringBuffer(); // 문자열 저장소 생성

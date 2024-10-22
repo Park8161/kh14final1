@@ -18,10 +18,10 @@ public class MemberDto {
 	private String memberContact;
 	private String memberBirth;
 	private String memberLevel;
-	private int memberPoint;
+	private Integer memberPoint;
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
 	private Date memberJoin;
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
 	private Date memberLogin;
-	private int memberReliability;
+	private Integer memberReliability;
 }
