@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -43,9 +44,6 @@ import com.kh.fa.vo.MemberFindPwVO;
 import com.kh.fa.vo.MemberLoginRequestVO;
 import com.kh.fa.vo.MemberLoginResponseVO;
 import com.kh.fa.vo.MypageVO;
-import com.kh.fa.vo.ProductLikeListRequestVO;
-import com.kh.fa.vo.ProductListResponseVO;
-import com.kh.fa.vo.ProductListVO;
 
 import jakarta.mail.MessagingException;
 
@@ -210,8 +208,15 @@ public class MemberRestController {
 	// 개인정보 변경
 	@PutMapping("/edit")
 	public void edit(@RequestBody MemberDto memberDto) {
+		MemberDto findDto = memberDao.selectOne(memberDto.getMemberId());
+		boolean emailCheck = ( "인증회원".equals(memberDto.getMemberLevel()) || "안전회원".equals(memberDto.getMemberLevel())) 
+							&& findDto.getMemberEmail() != null 
+							&& findDto.getMemberEmail().equals(memberDto.getMemberEmail()) == false;
+		if(emailCheck) { // 이메일 변경 여부를 통해 인증회원을 일반회원으로 등급 이동
+			memberDto.setMemberLevel("일반회원");
+		}
 		boolean result = memberDao.update(memberDto);
-		if(result == false) throw new TargetNotFoundException();
+		if(result == false) throw new TargetNotFoundException("개인정보 변경 실패");
 	}
 	
 	// 비밀번호 찾기를 위한 이메일 전송 - 비로그인
@@ -385,11 +390,26 @@ public class MemberRestController {
 	}
 	
 	//차단 상태 조회 매핑
-		@GetMapping("/banCheck/{memberId}")
-		public ResponseEntity<Boolean> banCheck(@PathVariable String memberId) {
-			BanDto banDto = memberDao.selectBanCheck(memberId);
-			
-			return ResponseEntity.ok(banDto != null && "차단".equals(banDto.getBanType()));
-		}
+	@GetMapping("/banCheck/{memberId}")
+	public ResponseEntity<Boolean> banCheck(@PathVariable String memberId) {
+		BanDto banDto = memberDao.selectBanCheck(memberId);
+		
+		return ResponseEntity.ok(banDto != null && "차단".equals(banDto.getBanType()));
+	}
+	
+	// 정보 딱 하나만 바꿀 때 쓰는 매핑 : 인증회원 등업, 포인트 변경, 유저평가점수 변경 등
+	@PatchMapping("/patch")
+	public void patch(@RequestHeader("Authorization") String token,  @RequestBody MemberDto memberDto) {
+		if(tokenService.isBearerToken(token) == false) throw new TargetNotFoundException("유효하지 않은 토큰");
+		MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(token));
+		
+		MemberDto findDto = memberDao.selectOne(claimVO.getMemberId());
+		if(findDto == null) throw new TargetNotFoundException("존재하지 않는 회원");
+		
+		memberDto.setMemberId(claimVO.getMemberId());
+		memberDao.updateOne(memberDto);
+	}
+	
+	
 
 }
