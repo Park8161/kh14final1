@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="reply">
+	<!-- 등록 -->
+	<select id="sequence" resultType="int">
+		select reply_seq.nextval from dual
+	</select>
+	<insert id="insert">
+		insert into reply(
+		reply_no, reply_writer, reply_qna, reply_content,
+		reply_wtime, reply_utime)
+		values(#{replyNo), values(#{replyWriter), values(#{replyQna), values(#{replyContent),
+		systimestamp, systimestamp)
+	</insert>
+	
+	<!-- 목록 -->
+	<select id="list" resultType="ReplyDto">
+	
+	</select>
+</mapper>
