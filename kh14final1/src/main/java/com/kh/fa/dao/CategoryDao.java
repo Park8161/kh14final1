@@ -56,5 +56,15 @@ public class CategoryDao {
 		return sqlSession.delete("category.delete", categoryNo) > 0;
 	}
 	
+	// 대분류에 해당하는 중분류 목록 조회
+	public List<CategoryDto> selectUpperCategory(int categoryGroup) {
+	    return sqlSession.selectList("category.selectUpperCategory", categoryGroup);
+	}
+	
+	public int sequence() {
+		return sqlSession.selectOne("category.sequence");
+	}
+
+	
 	
 }

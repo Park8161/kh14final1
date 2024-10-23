@@ -26,11 +26,11 @@
   		) 
   		values(
   			#{categoryNo}, #{categoryName}, #{categoryGroup},
-  			#{categoryUpper}, #{categoryDepth}
+  			#{categoryUpper, jdbcType=INTEGER}, #{categoryDepth}
   		)
   	</insert>
   	
-  	<!-- 단순 목록 조회 -->
+  	<!-- 단순 목록 조회-->
   	<select id="list" resultType="CategoryDto">
   		select * from category order by category_no asc
   	</select>
@@ -102,4 +102,14 @@
 		</if>
 	</sql> 	
 	  	
+	  	
+	 <!-- 대분류에 해당하는 중분류 목록 조회 -->
+	<select id="selectUpperCategory" resultType="CategoryDto">
+	    select * from category where category_group = #{categoryGroup} and category_depth = 2
+	</select>
+	
+	<select id="sequence" resultType="int">
+		select category_seq.nextval from dual
+	</select>
+	
 </mapper>
