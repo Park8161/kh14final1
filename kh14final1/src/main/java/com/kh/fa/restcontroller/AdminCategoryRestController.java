@@ -26,9 +26,19 @@ public class AdminCategoryRestController {
 	@Autowired
 	private CategoryDao categoryDao;
 	
-	// 등록 - 카테고리 번호도 입력받아와야함
+	// 등록 - 카테고리 번호도 입력받아와야함  
 	@PostMapping("/insert")
 	public void insert(@RequestBody CategoryDto categoryDto) {
+		System.out.println(categoryDto);
+		int seq = categoryDao.sequence();
+		categoryDto.setCategoryNo(seq);
+		if(categoryDto.getCategoryDepth() == 1) {
+			categoryDto.setCategoryGroup(seq);
+		}
+		else {
+			CategoryDto upperDto = categoryDao.selectOne(categoryDto.getCategoryUpper());
+			categoryDto.setCategoryGroup(upperDto.getCategoryGroup());
+		}
 		categoryDao.insert(categoryDto);
 	}
 	
@@ -74,5 +84,11 @@ public class AdminCategoryRestController {
 		categoryDao.delete(categoryNo);
 	}
 	
+	// 중분류 목록 조회
+	@GetMapping("/upper/{categoryGroup}")
+	public List<CategoryDto> getUpperCategories(@PathVariable int categoryGroup) {
+	    List<CategoryDto> upperCategories = categoryDao.selectUpperCategory(categoryGroup);
+	    return upperCategories;
+	}
 	
 }
