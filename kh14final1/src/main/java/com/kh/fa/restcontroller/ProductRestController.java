@@ -161,6 +161,7 @@ public class ProductRestController {
 		// 수정 후 
 		// - originList : 기존 첨부 처리
 		Set<Integer> after = new HashSet<>();
+		productDao.deleteImage(requestVO.getProductNo()); // 받아온 상품 번호로 이미지를 찾아서 날림(클라이언트에서 날라온 기존 첨부 번호가 primary key 유니크 위반 오류 떠서)
 		int afterSize = requestVO.getOriginList().size();
 		for(int i=0; i<afterSize; i++) {
 			int attachmentNo = requestVO.getOriginList().get(i);
@@ -177,13 +178,14 @@ public class ProductRestController {
 		}
 		
 		// - attachList : 신규 첨부
-		int attachListSize = requestVO.getAttachList().size();
-		for(int i=0; i<attachListSize; i++) {
-			int attachmentNo = attachmentService.save(requestVO.getAttachList().get(i));
-			productDao.connect(requestVO.getProductNo(), attachmentNo);
-			after.add(attachmentNo); // 저장소에 추가
+		if( requestVO.getAttachList() != null ) {
+			int attachListSize = requestVO.getAttachList().size();
+			for(int i=0; i<attachListSize; i++) {
+				int attachmentNo = attachmentService.save(requestVO.getAttachList().get(i));
+				productDao.connect(requestVO.getProductNo(), attachmentNo);
+				after.add(attachmentNo); // 저장소에 추가
+			}
 		}
-		
 		// 상품 정보 수정
 		// 글처리 다했으므로 글이 없는지 파악할 필요가 없다
 		ProductDto productDto = productDao.selectOne(requestVO.getProductNo());
