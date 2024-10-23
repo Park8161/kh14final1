@@ -18,7 +18,7 @@ import com.kh.fa.error.TargetNotFoundException;
 import com.kh.fa.vo.CategoryListRequestVO;
 import com.kh.fa.vo.CategoryListResponsVO;
 
-@CrossOrigin
+@CrossOrigin(origins = {"http://localhost:3000"})
 @RestController
 @RequestMapping("/admin/category")
 public class AdminCategoryRestController {
@@ -73,7 +73,7 @@ public class AdminCategoryRestController {
 	}
 	
 	// 수정
-	@PostMapping("/update")
+	@PostMapping("/update/{categoryNo}")
 	public void update(@RequestBody CategoryDto categoryDto) {
 		categoryDao.update(categoryDto);
 	}
