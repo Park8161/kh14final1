@@ -90,7 +90,7 @@ public class KakaoPayRestController {
 		if(paymentDto == null) throw new TargetNotFoundException("존재하지 않는 결제내역");
 		// 본인 소유 검증
 		MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(token));
-		if(paymentDto.getMemberId().equals(claimVO.getMemberId()) == false) throw new TargetNotFoundException("결제내역의 소유자가 아닙니다");
+		if(paymentDto.getPaymentBuyer().equals(claimVO.getMemberId()) == false) throw new TargetNotFoundException("결제내역의 소유자가 아닙니다");
 		// 결제 상세 내역
 		List<PaymentDetailDto> list = paymentDao.selectDetailList(paymentNo);
 		// 카카오페이 조회내역
@@ -115,7 +115,7 @@ public class KakaoPayRestController {
 		if(paymentDto == null) throw new TargetNotFoundException("존재하지 않는 결제정보");		
 		// 본인 소유 검증
 		MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(token));
-		if(paymentDto.getMemberId().equals(claimVO.getMemberId()) == false) throw new TargetNotFoundException("소유자 불일치");
+		if(paymentDto.getPaymentBuyer().equals(claimVO.getMemberId()) == false) throw new TargetNotFoundException("소유자 불일치");
 		if(paymentDto.getPaymentRemain() == 0) throw new TargetNotFoundException("이미 취소된 결제");
 		// [1] 카카오페이에 해당 결제 거래번호에 대한 남은 금액을 취소해달라고 요청
 		KakaoPayCancelRequestVO request = new KakaoPayCancelRequestVO();
@@ -139,7 +139,7 @@ public class KakaoPayRestController {
 		if(paymentDto == null) throw new TargetNotFoundException("존재하지 않는 결제정보");
 		// 본인 소유 검증
 		MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(token));
-		if(paymentDto.getMemberId().equals(claimVO.getMemberId()) == false) throw new TargetNotFoundException("소유자 불일치");
+		if(paymentDto.getPaymentBuyer().equals(claimVO.getMemberId()) == false) throw new TargetNotFoundException("소유자 불일치");
 		if(paymentDto.getPaymentRemain() == 0) throw new TargetNotFoundException("이미 취소된 결제");
 		// [1] 카카오페이에 취소 요청 보낸다
 		int money = paymentDetailDto.getPaymentDetailPrice() * paymentDetailDto.getPaymentDetailQty(); // 해당 항목의 금액
