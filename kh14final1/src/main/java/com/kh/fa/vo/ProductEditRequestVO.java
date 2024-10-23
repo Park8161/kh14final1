@@ -4,9 +4,6 @@ import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.kh.fa.advice.JsonEmptyStringToNullDeserializer;
-
 import lombok.Data;
 
 @Data
@@ -19,6 +16,6 @@ public class ProductEditRequestVO {
 //	private String productState;
 	private int productQty;
 	private int productCategory;
-
-	private List<MultipartFile> attachList;
+	private List<Integer> originList; // 기존 이미지의 첨부파일번호
+	private List<MultipartFile> attachList; // 첨부된 파일의 정보가 담긴 리스트
 }
