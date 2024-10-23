@@ -11,6 +11,7 @@ public class PaymentDto {
 	private String paymentName;
 	private int paymentTotal;
 	private int paymentRemain;
-	private String memberId;
+	private String paymentSeller;
+	private String paymentBuyer;
 	private Date paymentTime;
 }
