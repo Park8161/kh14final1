@@ -20,10 +20,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.kh.fa.dao.AttachmentDao;
 import com.kh.fa.dao.CategoryDao;
 import com.kh.fa.dao.MemberDao;
 import com.kh.fa.dao.ProductDao;
 import com.kh.fa.dao.ProductLikeDao;
+import com.kh.fa.dto.AttachmentDto;
 import com.kh.fa.dto.MemberDto;
 import com.kh.fa.dto.ProductDto;
 import com.kh.fa.error.TargetNotFoundException;
@@ -140,6 +142,8 @@ public class ProductRestController {
 	// 상품 정보 수정
 	// 상세 정보의 수정된 정보를 그대로 받아 requestVO로 사용
 	// 첨부파일 수정은 수정 전/후를 비교하여 삭제 대상을 찾아 삭제 처리
+	// 수정된 첨부파일은 기존에서 삭제될 이미지를 뺀 originList와 신규첨부인 attachList로 구성
+	// originList는 첨부파일번호(attachmentNo)로 구성, attachList는 첨부파일정보(MultipartFile)로 구성
 	@Transactional
 	@PostMapping(value = "/edit", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public void edit(@ModelAttribute ProductEditRequestVO requestVO) throws IllegalStateException, IOException {
@@ -154,21 +158,30 @@ public class ProductRestController {
 			before.add(beforeList.get(i)); // 저장소에 추가
 		}		
 		
-		// 수정 후
+		// 수정 후 
+		// - originList : 기존 첨부 처리
 		Set<Integer> after = new HashSet<>();
+		int afterSize = requestVO.getOriginList().size();
+		for(int i=0; i<afterSize; i++) {
+			int attachmentNo = requestVO.getOriginList().get(i);
+			productDao.connect(requestVO.getProductNo(), attachmentNo);
+			after.add(attachmentNo); // 저장소에 추가
+		}
+		
+		// 수정전 - 수정후 계산 : 살려야할 번호만 담긴 originList의 번호들과 겹치지 않는 번호들만 남김
+		before.removeAll(after);
+		
+		// before에 남아있는 번호에 해당하는 파일을 모두 삭제 : 겹치짖 않는 번호들 삭제
+		for(int attachmentNo : before) {
+			attachmentService.delete(attachmentNo); // db+파일 삭제
+		}
+		
+		// - attachList : 신규 첨부
 		int attachListSize = requestVO.getAttachList().size();
 		for(int i=0; i<attachListSize; i++) {
 			int attachmentNo = attachmentService.save(requestVO.getAttachList().get(i));
 			productDao.connect(requestVO.getProductNo(), attachmentNo);
 			after.add(attachmentNo); // 저장소에 추가
-		}
-		
-		// 수정전 - 수정후 계산
-		before.removeAll(after);
-		
-		// before에 남아있는 번호에 해당하는 파일을 모두 삭제
-		for(int attachmentNo : before) {
-			attachmentService.delete(attachmentNo); // db+파일 삭제
 		}
 		
 		// 상품 정보 수정
@@ -250,6 +263,16 @@ public class ProductRestController {
 		productLikeVO.setCount(productLikeDao.count(productNo));
 		
 		return productLikeVO;
+	}
+	
+	@Autowired
+	private AttachmentDao attachmentDao;
+	
+	// 첨부파일 조회 (임시)
+	@GetMapping("/atat/{productNo}")
+	public AttachmentDto atat(@PathVariable int productNo) {
+		Integer image = productDao.findImage(productNo);
+		return attachmentDao.selectOne(image);
 	}
 	
 }
