@@ -26,7 +26,7 @@ public class AdminCategoryRestController {
 	@Autowired
 	private CategoryDao categoryDao;
 	
-	// 등록 - 카테고리 번호도 입력받아와야함
+	// 등록 - 카테고리 번호도 입력받아와야함 
 	@PostMapping("/insert")
 	public void insert(@RequestBody CategoryDto categoryDto) {
 		System.out.println(categoryDto);
