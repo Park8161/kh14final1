@@ -8,7 +8,6 @@ import org.springframework.stereotype.Repository;
 
 import com.kh.fa.dto.QnaDto;
 import com.kh.fa.vo.QnaListRequestVO;
-import com.kh.fa.vo.PageVO;
 
 @Repository
 public class QnaDao {
@@ -32,15 +31,16 @@ public class QnaDao {
 		return sqlSession.selectOne("qna.detail", qnaNo);
 	}
 	//수정
-	public boolean edit(QnaDto qnaDto) {
+	public boolean update(QnaDto qnaDto) {
 		return sqlSession.update("qna.edit", qnaDto) > 0;
 	}
 	//삭제
 	public boolean delete(int qnaNo) {
 		return sqlSession.delete("qna.delete", qnaNo) > 0;
 	}
+	//목록 + 페이징 + 검색
 	public List<QnaDto> selectListByPaging(QnaListRequestVO vo){
-		return sqlSession.selectList("qna.list", vo);
+		return sqlSession.selectList("qna.listByPaging", vo);
 	}
 	public int countWithPaging(QnaListRequestVO vo) {
 		return sqlSession.selectOne("qna.count", vo);

@@ -2,16 +2,15 @@ package com.kh.fa.restcontroller;
 
 
 import java.io.IOException;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,13 +23,10 @@ import com.kh.fa.dto.NoticeDto;
 import com.kh.fa.error.TargetNotFoundException;
 import com.kh.fa.service.TokenService;
 import com.kh.fa.vo.MemberClaimVO;
-import com.kh.fa.vo.NoticeListRequestVO;
-import com.kh.fa.vo.NoticeListResponseVO;
-import com.kh.fa.vo.ProductInsertRequestVO;
 
 import io.swagger.v3.oas.annotations.Parameter;
 
-@CrossOrigin
+@CrossOrigin(origins = {"http://localhost:3000"})
 @RestController
 @RequestMapping("/notice")
 public class NoticeRestController {
@@ -53,8 +49,6 @@ public class NoticeRestController {
 	MemberDto memberDto = memberDao.selectOne(claimVO.getMemberId());
 	if(memberDto == null) throw new TargetNotFoundException("존재하지 않는 회원");
 	
-//	@PostMapping("/insert")
-//	public void insert(@RequestBody NoticeDto noticeDto, @RequestHeader("Authorization") String token) {
 		int noticeNo = noticeDao.sequence();
 	
 		noticeDto.setNoticeWriter(claimVO.getMemberId());
@@ -74,16 +68,28 @@ public class NoticeRestController {
 		return noticeDto;
 	}
 	
-	@PostMapping("/list")//목록 + 페이징 + 검색
-	public NoticeListResponseVO list(@RequestBody NoticeListRequestVO vo){
-		int count = noticeDao.countWithPaging(vo);
-		boolean last = vo.getEndRow() == null  || count <= vo.getEndRow();
-		NoticeListResponseVO response = new NoticeListResponseVO();
-		response.setNoticeList(noticeDao.selectListByPaging(vo));
-		response.setCount(count);
-		response.setLast(last);
-		return response;
-	}	
+//	@PostMapping("/list")//목록 + 페이징 + 검색
+//	public NoticeListResponseVO list(@RequestBody NoticeListRequestVO vo){
+//		int count = noticeDao.countWithPaging(vo);
+//		boolean last = vo.getEndRow() == null  || count <= vo.getEndRow();
+//		NoticeListResponseVO response = new NoticeListResponseVO();
+//		response.setNoticeList(noticeDao.selectListByPaging(vo));
+//		response.setCount(count);
+//		response.setLast(last);
+//		return response;
+//	}	
+	
+	@GetMapping("/list")
+	public List<NoticeDto> list(){
+		return noticeDao.selectList();
+	}
+	@PutMapping("/edit/{noticeNo}")//수정
+	public void update(@PathVariable int noticeNo, @RequestBody NoticeDto noticeDto) {
+		boolean result = noticeDao.update(noticeDto);
+		if(result == false) {
+			throw new TargetNotFoundException();
+		}
+	}
 	
 	@DeleteMapping("/delete/{noticeNo}")//삭제
 	public void delete(@PathVariable int noticeNo) {

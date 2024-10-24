@@ -12,5 +12,4 @@ public class NoticeListRequestVO {
 	private String column, keyword;	
 	@JsonDeserialize(using = JsonEmptyIntegerToNullDeserializer.class)
 	private Integer beginRow, endRow;
-	
 }
