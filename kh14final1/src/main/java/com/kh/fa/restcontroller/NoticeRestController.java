@@ -83,6 +83,12 @@ public class NoticeRestController {
 	public List<NoticeDto> list(){
 		return noticeDao.selectList();
 	}
+	
+	@GetMapping("/list/column/{column}/keyword/{keyword}")
+	public List<NoticeDto> list(@PathVariable String column, @PathVariable String keyword) {
+		return noticeDao.selectList(column, keyword);
+	}
+	
 	@PutMapping("/edit/{noticeNo}")//수정
 	public void update(@PathVariable int noticeNo, @RequestBody NoticeDto noticeDto) {
 		boolean result = noticeDao.update(noticeDto);
