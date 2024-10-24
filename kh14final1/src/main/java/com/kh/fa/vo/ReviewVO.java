@@ -1,11 +1,11 @@
-package com.kh.fa.dto;
+package com.kh.fa.vo;
 
 import java.sql.Date;
 
 import lombok.Data;
 
 @Data
-public class ReviewDto {
+public class ReviewVO {
 	private int reviewNo;
 	private String reviewTarget;
 	private String reviewWriter;
@@ -13,4 +13,6 @@ public class ReviewDto {
 	private String reviewContent;
 	private Date reviewWtime;
 	private int reviewScore;
+	
+	private String ProductName;
 }
