@@ -18,10 +18,11 @@
 	<insert id="paymentInsert">
 		insert into payment(
 			payment_no, payment_tid, payment_name, 
-			payment_total, payment_remain, payment_buyer, payment_seller
+			payment_total, payment_remain, payment_buyer, payment_seller, product_no, payment_status
 		) values(
 			#{paymentNo}, #{paymentTid}, #{paymentName}, 
-			#{paymentTotal}, #{paymentRemain}, #{paymentBuyer}, #{paymentSeller}
+			#{paymentTotal}, #{paymentRemain}, #{paymentBuyer}, 
+			#{paymentSeller}, #{productNo}, #{paymentStatus}
 		)
 	</insert>
 	<insert id="paymentDetailInsert">
@@ -38,7 +39,7 @@
 	
 	<!-- 특정 회원의 결제 대표 정보를 조회하는 구문 -->
 	<select id="list" resultType="PaymentDto">
-		select * from payment where member_id = #{memberId} order by payment_no desc
+		select * from payment where payment_buyer = #{memberId} order by payment_no desc
 	</select>
 	
 	<select id="find" resultType="PaymentDto">
@@ -116,5 +117,27 @@
 		select * from payment_detail where payment_detail_no = #{paymentDetailNo}
 	</select>
 	
+	<update id="setSoldOut">
+		update product set product_state = '판매완료' WHERE PRODUCT_NO = #{productNo}
+	</update>
 	
+	<select id="selectPaymentImage" resultType="PaymentImageVO">
+		SELECT p.*, pi2.*
+		FROM payment p
+		JOIN (
+		    SELECT pi2.*, 
+		           ROW_NUMBER() OVER (PARTITION BY pi2.product ORDER BY pi2.attachment ASC) as rn
+		    FROM PRODUCT_IMAGE pi2
+		) pi2 ON p.product_no = pi2.product
+		WHERE p.product_no = #{productNo}
+		AND pi2.rn = 1
+	</select>
+	
+	<select id="selectPaidPr" resultType="int">
+	SELECT product_no FROM payment WHERE PAYMENT_BUYER = #{memberId}
+	</select>
+	
+	<update id="confirmBuy">
+		update payment SET PAYMENT_STATUS ='확정' WHERE payment_no = #{paymentNo}
+	</update>
 </mapper>

@@ -3,6 +3,7 @@ package com.kh.fa.dao;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import com.kh.fa.dto.PaymentDetailDto;
 import com.kh.fa.dto.PaymentDto;
+import com.kh.fa.vo.PaymentImageVO;
 import com.kh.fa.vo.PaymentTotalVO;
 
 @Repository
@@ -73,6 +75,25 @@ public class PaymentDao {
 
 	public PaymentDetailDto selectDetailOne(int paymentDetailNo) {
 		return sqlSession.selectOne("payment.selectDetailOne", paymentDetailNo);
+	}
+	
+	public boolean setSoldOut(int productNo) {
+		return sqlSession.update("payment.setSoldOut", productNo) > 0;
+	}
+	
+	public List<Integer> selectPaidPr(String memberId){
+		List<Integer> list = sqlSession.selectList("payment.selectPaidPr", memberId);
+		System.out.println("dao debug"+list);
+		return list;
+	} 
+	
+//	결제 내역과 결제 내역 상품에 대한 한장의 이미지번호를 추출
+	public PaymentImageVO selectPaymentImage(int productNo) {
+		return sqlSession.selectOne("payment.selectPaymentImage", productNo);
+	}
+
+	public void confirmBuy(int productNo) {
+		sqlSession.update("payment.confirmBuy", productNo);
 	}
 	
 }

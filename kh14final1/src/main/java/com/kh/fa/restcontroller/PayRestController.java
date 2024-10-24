@@ -1,11 +1,15 @@
 package com.kh.fa.restcontroller;
 
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -15,12 +19,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.kh.fa.ProductApproveRequestVO;
 import com.kh.fa.dao.PaymentDao;
 import com.kh.fa.dao.ProductDao;
-import com.kh.fa.dto.PaymentDetailDto;
 import com.kh.fa.dto.PaymentDto;
 import com.kh.fa.dto.ProductDto;
 import com.kh.fa.service.KakaoPayService;
 import com.kh.fa.service.TokenService;
 import com.kh.fa.vo.MemberClaimVO;
+import com.kh.fa.vo.PaymentImageVO;
 import com.kh.fa.vo.ProductBuyRequestVO;
 import com.kh.fa.vo.pay.KakaoPayApproveRequestVO;
 import com.kh.fa.vo.pay.KakaoPayApproveResponseVO;
@@ -98,8 +102,11 @@ public class PayRestController {
 		paymentDto.setPaymentRemain(paymentDto.getPaymentTotal());//취소가능금액
 		paymentDto.setPaymentBuyer(claimVO.getMemberId());//구매자ID
 		paymentDto.setPaymentSeller(productDto.getProductMember());//판매자 ID
+		paymentDto.setProductNo(prRequest.getProductNo());
+		paymentDto.setPaymentStatus("승인");
 		paymentDao.paymentInsert(paymentDto);//대표정보 등록
 		
+		paymentDao.setSoldOut(prRequest.getProductNo());
 		
 //		int paymentDetailSeq = paymentDao.paymentDetailSequence();//번호 추출
 //		PaymentDetailDto paymentDetailDto = new PaymentDetailDto();
@@ -113,4 +120,40 @@ public class PayRestController {
 		
 		return responseVO;
 	}
+	
+	@GetMapping("/list")
+	public List<PaymentDto> list(@RequestHeader("Authorization") String token) {
+		MemberClaimVO claimVO =
+				tokenService.check(tokenService.removeBearer(token));
+		List<PaymentDto> list = paymentDao.selectList(claimVO.getMemberId());
+		return list;
+	}
+	
+	@GetMapping("/listWithImage")
+	public List<PaymentImageVO> listWithImage(@RequestHeader("Authorization") String token){
+		MemberClaimVO claimVO =
+				tokenService.check(tokenService.removeBearer(token));
+//		결제한 상품 번호 리스트
+		List<Integer> prNoList = paymentDao.selectPaidPr(claimVO.getMemberId());
+		System.out.println("prNoList"+prNoList);
+	    List<PaymentImageVO> paymentImageList = new ArrayList<>();
+
+	    for(int no : prNoList) {
+	    	// 상품번호에 따른 이미지 번호와 결제내역 데이터
+	        PaymentImageVO paymentImageVO = paymentDao.selectPaymentImage(no); 
+	        if(paymentImageVO != null) {
+	            paymentImageList.add(paymentImageVO); //
+	        }
+	    }
+	    System.out.println("디버깅"+paymentImageList);
+		return paymentImageList;
+	}
+	
+	@PostMapping("/confirmBuy/{paymentNo}")
+	public void confirmBuy(
+			@PathVariable int paymentNo) {
+		//구매 내역의 상태를 확정으로 변경
+		paymentDao.confirmBuy(paymentNo);
+	}
+	
 }
