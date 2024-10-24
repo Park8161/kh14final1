@@ -11,14 +11,28 @@
 	</select>
 	<insert id="insert">
 		insert into reply(
-		reply_no, reply_writer, reply_qna, reply_content,
-		reply_wtime, reply_utime)
-		values(#{replyNo), values(#{replyWriter), values(#{replyQna), values(#{replyContent),
-		systimestamp, systimestamp)
+		reply_no, reply_writer, reply_qna, reply_content 
+		)values(
+		#{replyNo}, #{replyWriter}, #{replyQna}, #{replyContent})
 	</insert>
 	
 	<!-- 목록 -->
 	<select id="list" resultType="ReplyDto">
-	
+	    select * from reply where reply_qna = #{replyQna}
+	    order by reply_no asc
 	</select>
+	
+	<!-- 수정 -->
+	<update id="edit">
+		update reply
+		set reply_content = #{replyContent},
+		reply_utime = sysdate
+		where reply_no = #{replyNo}
+	</update>
+	
+	<!-- 삭제 -->
+	<delete id="delete">
+		delete from reply where reply_no = #{replyNo}
+	</delete>
+	
 </mapper>
