@@ -1,6 +1,8 @@
 package com.kh.fa.dao;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +27,13 @@ public class QnaDao {
 	//목록
 	public List<QnaDto> selectList(){
 		return sqlSession.selectList("qna.list");
+	}
+	// 목록 임시
+	public List<QnaDto> selectList(String column, String keyword){
+		Map<String, Object> params = new HashMap<>();
+		params.put("column", column);
+		params.put("keyword", keyword);
+		return sqlSession.selectList("qna.listSearch", params);
 	}
 	//상세
 	public QnaDto selectOne(int qnaNo) {

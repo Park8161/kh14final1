@@ -17,6 +17,7 @@
 		<if test="column != null and keyword != null">
 			where instr(${column}, #{keyword}) > 0
 		</if>
+		order by notice_no desc
 	</select>
 
 	<!-- 등록(관리자만) -->
@@ -35,7 +36,7 @@
 	<!-- 목록 -->
 	<select id="list" resultType="NoticeDto">
 		select * from notice order by
-		notice_no asc
+		notice_no desc
 	</select>
 
 

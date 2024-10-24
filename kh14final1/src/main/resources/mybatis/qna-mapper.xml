@@ -17,6 +17,7 @@
 		<if test="column != null and keyword != null">
 			where instr(${column}, #{keyword}) > 0
 		</if>
+		order by qna_no desc
 	</select>
 	
 	<!-- 등록(관리자만) -->
@@ -33,7 +34,7 @@
 	
 	<!-- 목록 -->
 	<select id="list" resultType="QnaDto">
-		select * from qna order by qna_no asc
+		select * from qna order by qna_no desc
 	</select>
 	
 	<!-- 상세 -->

@@ -81,6 +81,11 @@ public class QnaRestController {
 		return qnaDao.selectList();
 	}
 	
+	@GetMapping("/list/column/{column}/keyword/{keyword}")
+	public List<QnaDto> list(@PathVariable String column, @PathVariable String keyword) {
+		return qnaDao.selectList(column, keyword);
+	}
+	
 	@PutMapping("/edit/{qnaNo}")//수정
 	public void update(@PathVariable int qnaNo, @RequestBody QnaDto qnaDto) {
 		boolean result = qnaDao.update(qnaDto);
