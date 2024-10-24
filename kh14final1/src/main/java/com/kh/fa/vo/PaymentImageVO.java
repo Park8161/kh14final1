@@ -1,11 +1,12 @@
-package com.kh.fa.dto;
+package com.kh.fa.vo;
 
 import java.sql.Date;
 
 import lombok.Data;
 
 @Data
-public class PaymentDto {
+public class PaymentImageVO {
+//	payment
 	private int paymentNo;
 	private String paymentTid;
 	private String paymentName;
@@ -16,4 +17,7 @@ public class PaymentDto {
 	private Date paymentTime;
 	private int productNo;
 	private String paymentStatus;
+//	product Image
+	private int product;
+	private int attachment;
 }
