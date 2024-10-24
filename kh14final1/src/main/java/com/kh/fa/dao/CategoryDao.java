@@ -64,6 +64,11 @@ public class CategoryDao {
 	public int sequence() {
 		return sqlSession.selectOne("category.sequence");
 	}
+	
+	// 하위 카테고리 조회
+	public int checkCotains(int categoryNo) {
+		return sqlSession.selectOne("category.contains", categoryNo);
+	}
 
 	
 	
