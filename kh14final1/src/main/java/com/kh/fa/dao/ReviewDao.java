@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.kh.fa.dto.ReviewDto;
+import com.kh.fa.vo.ReviewVO;
 
 @Repository
 public class ReviewDao {
@@ -26,12 +27,22 @@ public class ReviewDao {
 		sqlSession.insert("review.insert", reviewDto);
 	}
 	
-	// 목록 + 검색 (페이징 추가는 스킵)
-	public List<ReviewDto> selectList(String column, String keyword) {
-		Map<String, Object> params = new HashMap<>(); 
+	// 목록 + 검색 (페이징 추가는 스킵) : 판매자 대상 리뷰
+	public List<ReviewVO> selectList(String memberId ,String column, String keyword) {
+		Map<String, Object> params = new HashMap<>();
+		params.put("memberId", memberId);
 		params.put("column", column);
 		params.put("keyword", keyword);
 		return sqlSession.selectList("review.list", params);
+	}
+	
+	// 목록 + 검색 (페이징 추가는 스킵) : 내가 쓴 리뷰 검색
+	public List<ReviewVO> selectMyList(String memberId ,String column, String keyword) {
+		Map<String, Object> params = new HashMap<>();
+		params.put("memberId", memberId);
+		params.put("column", column);
+		params.put("keyword", keyword);
+		return sqlSession.selectList("review.mylist", params);
 	}
 	
 	// 상세
@@ -49,4 +60,8 @@ public class ReviewDao {
 		return sqlSession.update("review.delete", reviewNo) > 0;
 	}
 	
+	// 판매자 리뷰 개수 카운트
+	public int countReview(String memberId) { // 판매자의 아이디
+		return sqlSession.selectOne("review.countReview", memberId);
+	}
 }

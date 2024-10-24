@@ -20,13 +20,31 @@
 		)
 	</insert>
 	
-	<!-- 목록 + 검색 -->
-	<select id="list" resultType="ReviewDto">
-		select * from review 
+	<!-- 리뷰 개수 카운트 -->
+	<select id="countReview" resultType="int">
+		select count(*) from review where review_target = #{memberId}
+	</select>
+	
+	<!-- 목록 + 검색 : 유저 대상으로 조회 -->
+	<select id="list" resultType="ReviewVO">
+		select R.*, product_name from review R
+		left outer join product on review_product = product_no
+		where R.review_target = #{memberId}
 		<if test="column != null and keyword != null">
-			where instr(${column}, #{keyword}) > 0
+			and instr(${column}, #{keyword}) > 0
 		</if>
-		order by review_no desc
+		order by R.review_no desc
+	</select>
+	
+	<!-- 목록 + 검색 : 유저 대상으로 조회 -->
+	<select id="myList" resultType="ReviewVO">
+		select R.*, product_name from review R
+		left outer join product on review_product = product_no
+		where R.review_writer = #{memberId}
+		<if test="column != null and keyword != null">
+			and instr(${column}, #{keyword}) > 0
+		</if>
+		order by R.review_no desc
 	</select>
 	
 	<!-- 목록 + 페이징 + 검색 -->
@@ -43,10 +61,10 @@
 	<update id="update">
 		update review 
 		<set>
-			<if test="reviewTarget != null">review_target = #{reviewTarget}</if>
-			<if test="reviewWriter != null">review_writer = #{reviewWriter}</if>
-			<if test="reviewProduct != null">review_product = #{reviewProduct}</if>
-			<if test="reviewContent != null">review_content = #{reviewContent}</if>
+			<if test="reviewTarget != null">review_target = #{reviewTarget},</if>
+			<if test="reviewWriter != null">review_writer = #{reviewWriter},</if>
+			<if test="reviewProduct != null">review_product = #{reviewProduct},</if>
+			<if test="reviewContent != null">review_content = #{reviewContent},</if>
 			<if test="reviewScore != null">review_score = #{reviewScore}</if>
 		</set> 
 		where review_no = #{reviewNo}
