@@ -112,4 +112,10 @@
 		select category_seq.nextval from dual
 	</select>
 	
+	<!-- 하위 카테고리 조회 -->
+	<select id="contains" resultType="int">
+		select count (*) from category 
+		where category_upper = #{categoryNo} or category_group = #{categoryNo} 
+	</select>
+	
 </mapper>

@@ -29,11 +29,12 @@ public class AdminCategoryRestController {
 	// 등록 - 카테고리 번호도 입력받아와야함  
 	@PostMapping("/insert")
 	public void insert(@RequestBody CategoryDto categoryDto) {
-		System.out.println(categoryDto);
+//		System.out.println(categoryDto);
 		int seq = categoryDao.sequence();
 		categoryDto.setCategoryNo(seq);
 		if(categoryDto.getCategoryDepth() == 1) {
 			categoryDto.setCategoryGroup(seq);
+			categoryDto.setCategoryUpper(null);
 		}
 		else {
 			CategoryDto upperDto = categoryDao.selectOne(categoryDto.getCategoryUpper());
@@ -74,7 +75,16 @@ public class AdminCategoryRestController {
 	
 	// 수정
 	@PostMapping("/update/{categoryNo}")
-	public void update(@RequestBody CategoryDto categoryDto) {
+	public void update(@PathVariable int categoryNo, @RequestBody CategoryDto categoryDto) {
+		categoryDto.setCategoryNo(categoryNo);
+		if(categoryDto.getCategoryDepth() == 1) {
+			categoryDto.setCategoryGroup(categoryNo);
+			categoryDto.setCategoryUpper(null);
+		}
+		else {
+			CategoryDto upperDto = categoryDao.selectOne(categoryDto.getCategoryUpper());
+			categoryDto.setCategoryGroup(upperDto.getCategoryGroup());
+		}
 		categoryDao.update(categoryDto);
 	}
 	
@@ -91,4 +101,10 @@ public class AdminCategoryRestController {
 	    return upperCategories;
 	}
 	
+	//하위 카테고리 조회
+	@GetMapping("/contains/{categoryNo}")
+	public boolean contains(@PathVariable int categoryNo) {
+		int result = categoryDao.checkCotains(categoryNo);
+		return result > 0;
+	}
 }
