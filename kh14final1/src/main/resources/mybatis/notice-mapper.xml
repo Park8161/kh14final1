@@ -89,6 +89,30 @@
 		</if>
 		notice_no desc
 	</select>
+	
+	<!-- 첨부 테이블과 연결 : notice_image -->
+	<insert id="connect" parameterType="map">
+		insert into notice_image(notice, attachment)
+		values(#{noticeNo}, #{attachmentNo})
+	</insert>
+	
+	<!-- 여러 이미지 중 첫 번째만 가져오는 메소드 -->
+	<select id="findImage" resultType="Integer">
+		select min(attachment) from notice_image 
+		where notice = #{noticeNo}
+	</select>
+	
+	<!-- 여러 이미지를 가져오는 메소드 -->
+	<select id="findImages" resultType="Integer">
+		select attachment from notice_image
+		where notice = #{noticeNo}
+	</select>
+	
+	<!-- 이미지 삭제 -->
+	<delete id="deleteImage"	>
+		delete notice_image where notice = #{noticeNo}
+	</delete>
+	
 
 	<!-- 자주 사용하는(ex : Top N Query (페이징)) 구문들을 보관해두고서 불러서 사용 - 구문의 조각은 <sql> 
 		태그로 작성 - 이 구문을 불러올 때는 <include>로 작성 - beginRow와 endRow가 있을 때만 구동되도록 설정 : 
