@@ -53,13 +53,17 @@ public class ReviewRestController {
 		ProductDto productDto = productDao.selectOne(productNo);
 		if(productDto == null) throw new TargetNotFoundException("존재하지 않는 상품 번호 : 리뷰 상품");
 		
+		// 리뷰 정보 DB 저장
 		int reviewSeq = reviewDao.sequence();
 		reviewDto.setReviewNo(reviewSeq);
 		reviewDto.setReviewWriter(claimVO.getMemberId());
 		reviewDto.setReviewProduct(productNo);
 		reviewDto.setReviewTarget(productDto.getProductMember());
-		
 		reviewDao.insert(reviewDto);		
+		
+		// 회원 정보 테이블의 신뢰지수에 점수 반영
+		MemberDto targetDto = memberDao.selectOne(reviewDto.getReviewTarget());
+		targetDto.setMemberReliability(targetDto.getMemberReliability()+reviewDto.getReviewScore());
 	}
 	
 	// 목록 (페이징X) : 판매자 대상 검색 리뷰
@@ -108,6 +112,9 @@ public class ReviewRestController {
 		
 		ReviewDto findDto = reviewDao.selectOne(reviewDto.getReviewNo());
 		if(findDto == null) throw new TargetNotFoundException("존재하지 않는 리뷰 번호");
+
+		// 회원 정보 테이블의 신뢰지수에 점수 반영
+		targetDto.setMemberReliability(targetDto.getMemberReliability()-findDto.getReviewScore()+reviewDto.getReviewScore());
 		
 		reviewDao.update(reviewDto);
 	}
@@ -117,6 +124,10 @@ public class ReviewRestController {
 	public void delete(@PathVariable int reviewNo) {
 		ReviewDto findDto = reviewDao.selectOne(reviewNo);
 		if(findDto == null) throw new TargetNotFoundException("존재하지 않는 리뷰 번호");
+		
+		// 회원 정보 테이블의 신뢰지수에 점수 반영
+		MemberDto targetDto = memberDao.selectOne(findDto.getReviewTarget());
+		targetDto.setMemberReliability(targetDto.getMemberReliability()-findDto.getReviewScore());
 		
 		reviewDao.delete(reviewNo);
 	}

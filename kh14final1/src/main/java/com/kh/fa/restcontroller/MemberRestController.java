@@ -370,24 +370,31 @@ public class MemberRestController {
 	}
 	
 	// 타회원 상세정보 조회
-	@GetMapping("/{memberId}")
-	public MemberDetailVO detail(
-			@PathVariable String memberId) {
-		MemberDetailVO memberDetailVO = new MemberDetailVO();
-		memberDetailVO = memberDao.selectMemberDetail(memberId);
-		
-		return memberDetailVO;
+	@GetMapping("/detail/{memberId}")
+	public MemberDto detail(@PathVariable String memberId) {
+		MemberDto memberDto = memberDao.selectOne(memberId);
+		if(memberDto == null) throw new TargetNotFoundException("존재하지 않는 회원 아이디");
+		return memberDto;
 	}
+	
+//	@GetMapping("/{memberId}")
+//	public MemberDetailVO detail(
+//			@PathVariable String memberId) {
+//		MemberDetailVO memberDetailVO = new MemberDetailVO();
+//		memberDetailVO = memberDao.selectMemberDetail(memberId);
+//		
+//		return memberDetailVO;
+//	}
 
 	// 특정 회원의 상품목록 조회	
-	@GetMapping("/product/{memberId}")
-	public List<ProductDto> memberProductList(@PathVariable String memberId){
-		if(memberDao.selectMemberProduct(memberId)==null) {
-			List<ProductDto> list =null;			
-		}
-		List<ProductDto> list = memberDao.selectMemberProduct(memberId); 
-		return list;
-	}
+//	@GetMapping("/product/{memberId}")
+//	public List<ProductDto> memberProductList(@PathVariable String memberId){
+//		if(memberDao.selectMemberProduct(memberId)==null) {
+//			List<ProductDto> list =null;			
+//		}
+//		List<ProductDto> list = memberDao.selectMemberProduct(memberId); 
+//		return list;
+//	}
 	
 	//차단 상태 조회 매핑
 	@GetMapping("/banCheck/{memberId}")
