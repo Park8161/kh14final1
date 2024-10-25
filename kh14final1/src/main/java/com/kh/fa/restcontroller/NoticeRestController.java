@@ -67,16 +67,18 @@ public class NoticeRestController {
 	
 		noticeDto.setNoticeWriter(claimVO.getMemberId());
 		noticeDto.setNoticeNo(noticeNo);
-		System.out.println(noticeDto);
-		System.out.println(noticeNo);
+//		System.out.println(noticeDto);
+//		System.out.println(noticeNo);
 		noticeDao.insert(noticeDto);
 		
 		//파일 등록
-		for(MultipartFile attach : requestVO.getAttachList()) {
+		if(requestVO.getAttachList() != null) {
+			for(MultipartFile attach : requestVO.getAttachList()) {
 			if(attach.isEmpty()) continue; // 파일이 없다면 스킵
-			
+					
 			int attachmentNo = attachmentService.save(attach);
 			noticeDao.connect(noticeNo, attachmentNo);
+			}			
 		}
 	
 	}
@@ -121,15 +123,15 @@ public class NoticeRestController {
 	
 	//수정
 	@Transactional
-	@PutMapping(value = "/edit/{noticeNo}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public void update(@PathVariable int noticeNo,
+	@PutMapping(value = "/edit/", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public void update(
 			@ModelAttribute NoticeEditRequestVO requestVO) throws IllegalStateException, IOException {
 		//공지사항 업데이트
 //		boolean result = noticeDao.update(noticeDto);
 //		if(result == false) {
 //			throw new TargetNotFoundException();
 //		}
-		NoticeDto originDto = noticeDao.selectOne(noticeNo);
+		NoticeDto originDto = noticeDao.selectOne(requestVO.getNoticeNo());
 		if(originDto == null) throw new TargetNotFoundException("존재지 않는 게시글");
 		
 		// 이미지 처리 수정 전
@@ -140,7 +142,7 @@ public class NoticeRestController {
 		}
 		
 		//이미지 처리 수정 후
-		List<Integer> beforeImages = noticeDao.findImages(originDto.getNoticeNo()); // 기존 이미지 목록
+//		List<Integer> beforeImages = noticeDao.findImages(originDto.getNoticeNo()); // 기존 이미지 목록
 		Set<Integer> after = new HashSet<>(); // 기존 이미지 세트
 		noticeDao.deleteImage(requestVO.getNoticeNo());
 		int afterSize = requestVO.getOriginList().size();
