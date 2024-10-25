@@ -39,6 +39,7 @@ import com.kh.fa.vo.ProductInsertRequestVO;
 import com.kh.fa.vo.ProductLikeVO;
 import com.kh.fa.vo.ProductListRequestVO;
 import com.kh.fa.vo.ProductListResponseVO;
+import com.kh.fa.vo.ProductListVO;
 
 @CrossOrigin
 @RestController
@@ -188,7 +189,7 @@ public class ProductRestController {
 		}
 		// 상품 정보 수정
 		// 글처리 다했으므로 글이 없는지 파악할 필요가 없다
-		ProductDto productDto = productDao.selectOne(requestVO.getProductNo());
+		ProductDto productDto = new ProductDto(); // Dto 조회가 아닌 그냥 새거 만드는게 맞음
 		productDto.setProductName(requestVO.getProductName());
 		productDto.setProductMember(requestVO.getProductMember());
 		productDto.setProductPrice(requestVO.getProductPrice());
@@ -267,14 +268,13 @@ public class ProductRestController {
 		return productLikeVO;
 	}
 	
-	@Autowired
-	private AttachmentDao attachmentDao;
-	
-	// 첨부파일 조회 (임시)
-	@GetMapping("/atat/{productNo}")
-	public AttachmentDto atat(@PathVariable int productNo) {
-		Integer image = productDao.findImage(productNo);
-		return attachmentDao.selectOne(image);
+	// 유저가 파는 상품 목록 조회
+	@GetMapping("/myList/{memberId}")
+	public List<ProductListVO> myList(@PathVariable String memberId) {
+		MemberDto memberDto = memberDao.selectOne(memberId);
+		if(memberDto == null) throw new TargetNotFoundException("존재하지 않는 회원 아이디");
+		
+		return productDao.selectMyList(memberId);
 	}
 	
 }
