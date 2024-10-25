@@ -90,27 +90,27 @@
 		notice_no desc
 	</select>
 	
-	<!-- 첨부 테이블과 연결 : notice_image -->
+	<!-- 첨부 테이블과 연결 : banner -->
 	<insert id="connect" parameterType="map">
-		insert into notice_image(notice, attachment)
+		insert into banner(notice, attachment)
 		values(#{noticeNo}, #{attachmentNo})
 	</insert>
 	
 	<!-- 여러 이미지 중 첫 번째만 가져오는 메소드 -->
 	<select id="findImage" resultType="Integer">
-		select min(attachment) from notice_image 
+		select min(attachment) from banner 
 		where notice = #{noticeNo}
 	</select>
 	
 	<!-- 여러 이미지를 가져오는 메소드 -->
 	<select id="findImages" resultType="Integer">
-		select attachment from notice_image
+		select attachment from banner
 		where notice = #{noticeNo}
 	</select>
 	
 	<!-- 이미지 삭제 -->
 	<delete id="deleteImage"	>
-		delete notice_image where notice = #{noticeNo}
+		delete banner where notice = #{noticeNo}
 	</delete>
 	
 

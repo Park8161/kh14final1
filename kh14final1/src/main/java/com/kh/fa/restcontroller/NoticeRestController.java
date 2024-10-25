@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -49,8 +51,9 @@ public class NoticeRestController {
 	private AttachmentService attachmentService;
 
 	//등록
-	@PostMapping(value = "/insert")
-	public void insert(@RequestBody NoticeDto noticeDto,
+	@Transactional
+	@PostMapping(value = "/insert", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public void insert(@ModelAttribute NoticeDto noticeDto,
 			@RequestHeader("Authorization") String token,
 			@ModelAttribute NoticeInsertImageRequestVO requestVO) 
 					throws IllegalStateException, IOException {
@@ -116,14 +119,18 @@ public class NoticeRestController {
 		return noticeDao.selectList(column, keyword);
 	}
 	
-	@PutMapping("/edit/{noticeNo}")//수정
-	public void update(@ModelAttribute NoticeEditRequestVO requestVO) throws IllegalStateException, IOException {
+	//수정
+	@Transactional
+	@PutMapping(value = "/edit/{noticeNo}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public void update(@PathVariable int noticeNo,
+			@ModelAttribute NoticeEditRequestVO requestVO) throws IllegalStateException, IOException {
 		//공지사항 업데이트
 //		boolean result = noticeDao.update(noticeDto);
 //		if(result == false) {
 //			throw new TargetNotFoundException();
 //		}
-		NoticeDto originDto = noticeDao.selectOne(requestVO.getNoticeNo());
+		NoticeDto originDto = noticeDao.selectOne(noticeNo);
+		if(originDto == null) throw new TargetNotFoundException("존재지 않는 게시글");
 		
 		// 이미지 처리 수정 전
 		Set<Integer> before = new HashSet<>();
