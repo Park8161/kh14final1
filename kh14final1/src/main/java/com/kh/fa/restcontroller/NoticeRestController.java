@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -49,8 +51,9 @@ public class NoticeRestController {
 	private AttachmentService attachmentService;
 
 	//등록
-	@PostMapping(value = "/insert")
-	public void insert(@RequestBody NoticeDto noticeDto,
+	@Transactional
+	@PostMapping(value = "/insert", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public void insert(@ModelAttribute NoticeDto noticeDto,
 			@RequestHeader("Authorization") String token,
 			@ModelAttribute NoticeInsertImageRequestVO requestVO) 
 					throws IllegalStateException, IOException {
@@ -64,16 +67,18 @@ public class NoticeRestController {
 	
 		noticeDto.setNoticeWriter(claimVO.getMemberId());
 		noticeDto.setNoticeNo(noticeNo);
-		System.out.println(noticeDto);
-		System.out.println(noticeNo);
+//		System.out.println(noticeDto);
+//		System.out.println(noticeNo);
 		noticeDao.insert(noticeDto);
 		
 		//파일 등록
-		for(MultipartFile attach : requestVO.getAttachList()) {
+		if(requestVO.getAttachList() != null) {
+			for(MultipartFile attach : requestVO.getAttachList()) {
 			if(attach.isEmpty()) continue; // 파일이 없다면 스킵
-			
+					
 			int attachmentNo = attachmentService.save(attach);
 			noticeDao.connect(noticeNo, attachmentNo);
+			}			
 		}
 	
 	}
@@ -116,14 +121,18 @@ public class NoticeRestController {
 		return noticeDao.selectList(column, keyword);
 	}
 	
-	@PutMapping("/edit/{noticeNo}")//수정
-	public void update(@ModelAttribute NoticeEditRequestVO requestVO) throws IllegalStateException, IOException {
+	//수정
+	@Transactional
+	@PutMapping(value = "/edit/", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public void update(
+			@ModelAttribute NoticeEditRequestVO requestVO) throws IllegalStateException, IOException {
 		//공지사항 업데이트
 //		boolean result = noticeDao.update(noticeDto);
 //		if(result == false) {
 //			throw new TargetNotFoundException();
 //		}
 		NoticeDto originDto = noticeDao.selectOne(requestVO.getNoticeNo());
+		if(originDto == null) throw new TargetNotFoundException("존재지 않는 게시글");
 		
 		// 이미지 처리 수정 전
 		Set<Integer> before = new HashSet<>();
@@ -133,7 +142,7 @@ public class NoticeRestController {
 		}
 		
 		//이미지 처리 수정 후
-		List<Integer> beforeImages = noticeDao.findImages(originDto.getNoticeNo()); // 기존 이미지 목록
+//		List<Integer> beforeImages = noticeDao.findImages(originDto.getNoticeNo()); // 기존 이미지 목록
 		Set<Integer> after = new HashSet<>(); // 기존 이미지 세트
 		noticeDao.deleteImage(requestVO.getNoticeNo());
 		int afterSize = requestVO.getOriginList().size();
@@ -142,7 +151,7 @@ public class NoticeRestController {
 			noticeDao.connect(requestVO.getNoticeNo(), attachmentNo);
 			after.add(attachmentNo);
 		}
-		//ㅋ
+		//ㅋㅋ
 		//수정전 - 수정후 계산
 		before.removeAll(after);
 		
