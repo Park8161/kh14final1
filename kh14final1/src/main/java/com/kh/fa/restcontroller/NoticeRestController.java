@@ -141,7 +141,7 @@ public class NoticeRestController {
 			before.add(beforeList.get(i));
 		}
 		
-		//이미지 처리 수정 후
+		 //이미지 처리 수정 후
 //		List<Integer> beforeImages = noticeDao.findImages(originDto.getNoticeNo()); // 기존 이미지 목록
 		Set<Integer> after = new HashSet<>(); // 기존 이미지 세트
 		noticeDao.deleteImage(requestVO.getNoticeNo());
@@ -151,7 +151,7 @@ public class NoticeRestController {
 			noticeDao.connect(requestVO.getNoticeNo(), attachmentNo);
 			after.add(attachmentNo);
 		}
-		//ㅋㅋ
+		//ㅋㅋ  
 		//수정전 - 수정후 계산
 		before.removeAll(after);
 		
