@@ -142,7 +142,7 @@ public class NoticeRestController {
 			noticeDao.connect(requestVO.getNoticeNo(), attachmentNo);
 			after.add(attachmentNo);
 		}
-		
+		//ㅋ
 		//수정전 - 수정후 계산
 		before.removeAll(after);
 		
