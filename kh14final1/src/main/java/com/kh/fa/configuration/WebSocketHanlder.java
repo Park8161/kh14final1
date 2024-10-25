@@ -12,13 +12,12 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.tomcat.util.http.fileupload.FileItem;
-import org.apache.tomcat.util.http.fileupload.disk.DiskFileItem;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.disk.DiskFileItem;
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.socket.BinaryMessage;
@@ -28,6 +27,7 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import com.kh.fa.error.TargetNotFoundException;
+import com.kh.fa.service.FileUploadService;
 import com.kh.fa.service.TokenService;
 import com.kh.fa.vo.MemberClaimVO;
 
@@ -44,16 +44,25 @@ public class WebSocketHanlder extends TextWebSocketHandler{//텍스트 메세지
 //	//토큰 서비스
 //	@Autowired
 //	private TokenService tokenService;
-//	
+//	//파일 저장 서비스
+//	@Autowired
+//	private FileUploadService fileUploadService;
+//	//채팅방 이미지 저장소
+////	private static final String FILE_UPLOAD_PATH = "D:/upload/chatRoom/";
 //	
 //	@Override
 //	public void handleBinaryMessage(WebSocketSession session, BinaryMessage message) {
-//		   // 바이너리 메시지 발송
+//		// 바이너리 메시지 발송
 //	    ByteBuffer byteBuffer = message.getPayload(); // 메시지 데이터를 가져와서 바이너리 데이터로 가공
 //	    String fileName = "file.jpg";
+//	    
+////	    File dir = new File(FILE_UPLOAD_PATH, fileName);
+////	    if(!dir.exists()) {
+////			dir.mkdirs();
+////		}
 //
 //	    // 삭제할 파일을 찾아준다
-//	    File oldFile = new File(properties.getPath() + "/file.jpg");
+//	    File oldFile = new File(properties.getPath() + fileName);
 //	    try {
 //	        FileOutputStream fileOutputStream = new FileOutputStream(oldFile); // 출력 열기
 //	        fileOutputStream.close(); // 파일 삭제 시 FileOutputStream을 닫기
@@ -101,35 +110,16 @@ public class WebSocketHanlder extends TextWebSocketHandler{//텍스트 메세지
 //	            throw new TargetNotFoundException("IO 실패");
 //	        }
 //
-//	        // file을 multipartFile로 변환
-//	        MultipartFile multipartFile = new CommonsMultipartFile(fileItem);
-//
-//	        String originalName = UUID.randomUUID().toString() + "_" + multipartFile.getOriginalFilename(); // 파일 이름 생성 랜덤+원래 파일 이름
-//
-//	        long multipartFileSize = multipartFile.getSize(); // 원래 파일 크기
-//
-//	        File localFile = new File(properties.getPath() + originalName); // 저장할 파일 경로
-//
-//	        try (InputStream inputStream = multipartFile.getInputStream();
-//	             OutputStream outputStream = new FileOutputStream(localFile)) { // 업로드한 파일의 입력 통로 갖고오고 출력으로 저장
-//
-//	            // 파일 복사
-//	            byte[] buffer = new byte[1024];
-//	            int bytesRead;
-//	            while ((bytesRead = inputStream.read(buffer)) != -1) { // 더이상 읽을 데이터가 없으면 -1을 반환
-//	                outputStream.write(buffer, 0, bytesRead);
-//	            }
-//	        } catch (IOException e) {
-//	            e.printStackTrace(); // 예외 발생했을 때 어떤 예외 발생했는지 추적
-//	        }
+//	        //file을 multipartFile로 변환
+//	        fileUploadService.uploadFile(fileItem);
 //
 //	        byteBuffer.position(0); // 메시지 데이터가 저장된 버퍼를 다시 시작 위치로 돌림
 //
-//	        // 토큰 검사 및 해석
-//	        String accessToken = (String) session.getAttributes().get("accessToken");
-//	        if(accessToken == null) return;
+//	        // 토큰 검사 및 해석 
+////	        String accessToken = (String) session.getAttributes().get("accessToken");
+////	        if(accessToken == null) return;
 //	        
-//	        MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(accessToken));
+////	        MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(accessToken));
 //	        
 //	        // 메시지 발송
 //	        HashMap<String, Object> sessionMap = sessions.get(roomIndex); // 해당 방의 정보를 가져온다
@@ -142,9 +132,9 @@ public class WebSocketHanlder extends TextWebSocketHandler{//텍스트 메세지
 //	            try {
 //	                JSONObject obj = new JSONObject(); //JSON 객체 생성
 //	                obj.put("type", "imgurl");
-//	                obj.put("sessionId", claimVO.getMemberId()); // 토큰 검사로 아이디를 갖고온다
+//	                obj.put("sessionId", session.getId()); // 토큰 검사로 아이디를 갖고온다
 //	                obj.put("imageurl", imageurl); // 여기에서 imageurl에 값을 넣어줘야 함
-//	                webSocketSession.sendMessage(new TextMessage(obj.toJSONString())); // 초기화 버퍼 전송
+//	                webSocketSession.sendMessage(new TextMessage(obj.toString())); // 초기화 버퍼 전송
 //	            } catch (IOException e) {
 //	                e.printStackTrace();
 //	            }
@@ -155,6 +145,7 @@ public class WebSocketHanlder extends TextWebSocketHandler{//텍스트 메세지
 //	}
 //	
 //	//웹소캣 연결 후
+//	//-세션ID를 포함해 메세지를 전송함
 //	//-클라이언트 const socket = new SockJS 여기서 설정한 session 값을 갖고옴
 //	//-stomp로 되어있는 방에 세션을 연결해서 파일을 주고받는 구조 
 //	 @Override
@@ -191,7 +182,7 @@ public class WebSocketHanlder extends TextWebSocketHandler{//텍스트 메세지
 //		JSONObject obj = new JSONObject();
 //		obj.put("type", "getId");
 //		obj.put("sessionId", session.getId());
-//		session.sendMessage(new TextMessage(obj.toJSONString()));
+//		session.sendMessage(new TextMessage(obj.toString()));
 //		
 //		super.afterConnectionEstablished(session);//TextWebSocketHandler 호출, 세션 초기화 작업등을 해줌
 //	}
