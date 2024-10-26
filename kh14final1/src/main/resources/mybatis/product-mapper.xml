@@ -43,6 +43,7 @@
 	  			)
   		and product_category = #{productCategory} 
   		and product_no != #{productNo}
+  		and product_state != '판매완료'
  		<include refid="top-n-footer"></include>
   	</select>
   	
@@ -56,6 +57,7 @@
   				select min(attachment) from product_image 
   				where product = P.product_no
   			)
+  			and product_state != '판매완료'
   		<if test="column !=null and keyword !=null">
   			and instr(${column}, #{keyword}) > 0
   		</if>
@@ -70,8 +72,9 @@
   	<!-- 목록 카운트 -->
   	<select id="count" resultType="int">
   		select count(*) from product
+  		where product_state != '판매완료'
   		<if test="column !=null and keyword !=null">
-  			where instr(${column}, #{keyword}) > 0
+  			and instr(${column}, #{keyword}) > 0
   		</if>
   		order by 
   		<if test="column !=null and keyword !=null">
