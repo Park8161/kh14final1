@@ -83,7 +83,7 @@ public class PaymentDao {
 	
 	public List<Integer> selectPaidPr(String memberId){
 		List<Integer> list = sqlSession.selectList("payment.selectPaidPr", memberId);
-		System.out.println("dao debug"+list);
+//		System.out.println("dao debug"+list);
 		return list;
 	} 
 	

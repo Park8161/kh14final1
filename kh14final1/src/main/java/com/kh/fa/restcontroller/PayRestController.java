@@ -135,7 +135,7 @@ public class PayRestController {
 				tokenService.check(tokenService.removeBearer(token));
 //		결제한 상품 번호 리스트
 		List<Integer> prNoList = paymentDao.selectPaidPr(claimVO.getMemberId());
-		System.out.println("prNoList"+prNoList);
+//		System.out.println("prNoList"+prNoList);
 	    List<PaymentImageVO> paymentImageList = new ArrayList<>();
 
 	    for(int no : prNoList) {
@@ -145,7 +145,7 @@ public class PayRestController {
 	            paymentImageList.add(paymentImageVO); //
 	        }
 	    }
-	    System.out.println("디버깅"+paymentImageList);
+//	    System.out.println("디버깅"+paymentImageList);
 		return paymentImageList;
 	}
 	
