@@ -107,5 +107,17 @@ public class ProductDao {
 		return sqlSession.selectList("product.myList",memberId);
 	}
 	
+	// 관리자용 목록 : 검색O
+	public List<ProductDto> selectAdminList(String column, String keyword) {
+		Map<String, Object> params = new HashMap<>();
+		params.put("column", column);
+		params.put("keyword", keyword);
+		return sqlSession.selectList("product.adminList", params);
+	}
+	
+	// patch
+	public boolean patch(ProductDto productDto) {
+		return sqlSession.update("product.patch", productDto) > 0;
+	}
 	
 }
