@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -275,6 +276,27 @@ public class ProductRestController {
 		if(memberDto == null) throw new TargetNotFoundException("존재하지 않는 회원 아이디");
 		
 		return productDao.selectMyList(memberId);
+	}
+	
+	// 관리자용 목록 : 검색 안 할 때
+	@GetMapping("/list")
+	public List<ProductDto> list() {
+		return productDao.selectAdminList(null, null);
+	}
+	
+	// 관리자용 목록 : 검색 할 때
+	@GetMapping("/list/{column}/{keyword}")
+	public List<ProductDto> list(@PathVariable String column, @PathVariable String keyword) {
+		return productDao.selectAdminList(column, keyword);
+	}
+	
+	// 패치매핑 : 판매 상태 교체
+	@PatchMapping("/patch")
+	public void patch(@RequestBody ProductDto productDto) {
+		ProductDto findDto = productDao.selectOne(productDto.getProductNo());
+		if(findDto == null) throw new TargetNotFoundException("존재하지 않는 상품 번호");
+		
+		productDao.patch(productDto);
 	}
 	
 }

@@ -58,6 +58,7 @@
   				where product = P.product_no
   			)
   			and product_state != '판매완료'
+  			and product_state != '판매보류'
   		<if test="column !=null and keyword !=null">
   			and instr(${column}, #{keyword}) > 0
   		</if>
@@ -106,17 +107,20 @@
   	</update>
   
   	<!-- PATCH 수정 -->
-  	<update id="memberEdit">
+  	<update id="patch">
   		update product
   		<set>
   			<if test="productName != null">product_name=#{productName},</if>
-  			<if test="productCategory != null">product_category=#{productCategory}</if>
-  			<if test="productPrice != null">product_price=#{productPrice}</if>
-  			<if test="productState != null">product_state=#{productState}</if>
-  			<if test="productQty != null">product_qty=#{productQty}</if>
+  			<if test="productMember != null">product_member=#{productMember},</if>
+  			<if test="productCategory != null and productCategory != 0">product_category=#{productCategory},</if>
+  			<if test="productPrice != null and productPrice != 0">product_price=#{productPrice},</if>
+  			<if test="productDetail != null">product_detail=#{productDetail},</if>
+  			<if test="productState != null">product_state=#{productState},</if>
+  			<if test="productQty != null and productQty != 0">product_qty=#{productQty},</if>
+  			<if test="productLikes != null and productLikes != 0">product_likes=#{productLikes}</if>
   		</set>
   		where
-  			product_no=#{productNo}
+  			product_no = #{productNo}
   	</update>
   	
   	<!-- 여러 이미지 중 첫 번째만 가져오는 메소드 -->
@@ -185,6 +189,19 @@
   			)
   		and product_member = #{memberId}
   		order by product_no desc
+  	</select>
+  	
+  	<!-- 관리자용 목록 : 이미지 X -->
+  	<select id="adminList" resultType="ProductDto">
+  		select * from product
+  		<if test="column !=null and keyword !=null">
+  			where instr(${column}, #{keyword}) > 0
+		</if>
+  		order by
+  		<if test="column !=null and keyword !=null">
+  			${column} desc,
+  		</if>
+  		product_no desc
   	</select>
   	
   	<!-- 자주 사용하는(ex : Top N Query (페이징)) 구문들을 보관해두고서 불러서 사용 - 구문의 조각은 <sql> 
