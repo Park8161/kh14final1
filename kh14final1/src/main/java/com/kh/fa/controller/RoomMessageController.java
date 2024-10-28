@@ -13,7 +13,9 @@ import org.springframework.stereotype.Controller;
 
 import com.kh.fa.dao.RoomDao;
 import com.kh.fa.dao.RoomMessageDao;
+import com.kh.fa.dto.RoomMemberDto;
 import com.kh.fa.dto.RoomMessageDto;
+import com.kh.fa.dto.UnreadDto;
 import com.kh.fa.service.TokenService;
 import com.kh.fa.vo.MemberClaimVO;
 import com.kh.fa.vo.WebSocketRequestVO;
@@ -37,16 +39,21 @@ public class RoomMessageController {
 		StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
 		String accessToken = accessor.getFirstNativeHeader("accessToken");
 		if(accessToken == null) return;
-		
+				
 		MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(accessToken));
+		RoomMemberDto roomMemberDto = new RoomMemberDto();
+		roomMemberDto.setMemberId(claimVO.getMemberId());
+		roomMemberDto.setRoomNo(roomNo);
+//		상대방 아이디
+		String anotherMember = roomDao.selectAnother(roomMemberDto);
+		System.out.println("anoterMember/roomMemssageController"+anotherMember);
+		UnreadDto unreadDto = new UnreadDto();
+//		unread Dto에 roomNo, memberId, unread(count) 반환 
+		unreadDto.setMemberId(anotherMember);
+		unreadDto.setRoomNo(roomNo);
 		
-		// 검사 추가 (선택적 사용)
-		// RoomMemberDto roomMemberDto = new RoomMemberDto();
-		// roomMemberDto.setMemberId(claimVO.getMemberId());
-		// roomMemberDto.setRoomNo(roomNo);
-		// boolean canEnter = roomDao.check(roomMemberDto);
-		// if(canEnter == false) return;
-
+//		있으면 업데이트 없으면 생성 (dao에서 처리)
+		
 		WebSocketRequestVO request = message.getPayload(); // 메세지 추출 (본문)
 		
 		// 메세지 발송
@@ -55,7 +62,6 @@ public class RoomMessageController {
 		response.setSenderMemberLevel(claimVO.getMemberLevel());
 		response.setTime(LocalDateTime.now());
 		response.setContent(request.getContent());
-		System.out.println(response);
 		messagingTemplate.convertAndSend("/private/chat/"+roomNo, response); // @SendTo("/private/chat/{roomNo}")
 		
 		// DB에 저장

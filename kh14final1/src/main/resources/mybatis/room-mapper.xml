@@ -16,8 +16,8 @@
 	</insert>
 	
 	<!-- 목록 -->
-	<select id="list" resultType="RoomDto">
-		select * from room where order by room_no asc
+	<select id="noList" resultType="int">
+		SELECT room_no FROM room_member WHERE member_id = #{memberId} order by room_no asc
 	</select>
 	
 	<!-- 상세 -->
@@ -35,13 +35,46 @@
 		delete room where room_no = #{roomNo}
 	</delete>
 	
-	<!-- 추가 : 특정 회원의 접속 여부가 포함된 방 목록 -->
-	<select id="listByMember" resultType="RoomVO">
-		SELECT r.*
-		FROM room r
-		INNER JOIN room_member rm
-		ON r.room_no = rm.room_no
-		WHERE rm.member_id = #{memberId}
+	<!-- 나 아닌 멤버가 없을 때 쿼리 -->	
+	<select id="selectRoomListVO" resultType="RoomListVO">
+		SELECT 
+	p.product_name, 
+	last_msg.room_message_content, 
+	last_msg.room_message_time, 
+	rm.* 
+FROM room_member rm 
+JOIN product p ON rm.PRODUCT_NO =  p.PRODUCT_NO 
+LEFT JOIN 
+ (SELECT room_no, room_message_content, room_message_time 
+     FROM (
+         SELECT room_no, room_message_content, room_message_time, 
+                ROW_NUMBER() OVER (PARTITION BY room_no ORDER BY room_message_time DESC) AS rn 
+         FROM room_message 
+     ) 
+     WHERE rn = 1 
+    ) last_msg ON rm.room_no = last_msg.room_no 
+WHERE rm.ROOM_NO = #{roomNo}
+	</select>
+	
+	<!-- 나 아닌 참여자가 존재할 때 쿼리 -->
+	<select id="selectRoomListVO2" resultType="RoomListVO">
+		SELECT 
+	p.product_name, 
+	last_msg.room_message_content, 
+	last_msg.room_message_time, 
+	rm.* 
+FROM room_member rm 
+JOIN product p ON rm.PRODUCT_NO =  p.PRODUCT_NO 
+LEFT JOIN 
+ (SELECT room_no, room_message_content, room_message_time 
+     FROM (
+         SELECT room_no, room_message_content, room_message_time, 
+                ROW_NUMBER() OVER (PARTITION BY room_no ORDER BY room_message_time DESC) AS rn 
+         FROM room_message 
+     ) 
+     WHERE rn = 1 
+    ) last_msg ON rm.room_no = last_msg.room_no 
+WHERE rm.ROOM_NO = #{roomNo} AND rm.MEMBER_ID != #{memberId}
 	</select>
 	
 </mapper>

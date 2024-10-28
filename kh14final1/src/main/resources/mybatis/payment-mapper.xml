@@ -103,7 +103,7 @@
 		update payment set payment_remain = 0  where payment_no = #{paymentNo}
 	</update>
 	<update id="cancelAllItem">
-		update payment_detail set payment_detail_status = '취소' where payment_detail_origin = #{paymentNo}
+		update payment set payment_status = '취소' where payment_no = #{paymentNo}
 	</update>
 	<update id="cancelItem">
 		update payment_detail set payment_detail_status = '취소' where payment_detail_no = #{paymentDetailNo}

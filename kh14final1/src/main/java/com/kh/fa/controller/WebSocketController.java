@@ -31,16 +31,6 @@ import lombok.extern.slf4j.Slf4j;
 @Controller
 public class WebSocketController {
 	
-//	[1] /app/chat 이라는 채널로 메세지가 들어오면 /public/chat 으로 전송한다
-//	@MessageMapping("/chat")//사용자가 /app/chat으로 메세지를 보내면~
-//	@SendTo("/public/chat")//그 메세지를 /public/chat으로 보내세요!
-//	public WebSocketResponseVO chat(WebSocketRequestVO request) {
-//		WebSocketResponseVO response = new WebSocketResponseVO();
-//		response.setContent(request.getContent());//사용자가 보낸 내용 그대로
-//		response.setTime(LocalDateTime.now());//시간은 현재 시각으로 추가
-//		return response;
-//	}
-	
 //	전송 도구 생성
 	@Autowired
 	private SimpMessagingTemplate messagingTemplate;
@@ -60,17 +50,13 @@ public class WebSocketController {
 		//헤더 추출
 		StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);//도구 생성
 		String accessToken = accessor.getFirstNativeHeader("accessToken");
-		//String refreshToken = accessor.getFirstNativeHeader("refreshToken");
-//		if(accessToken == null) {//비회원이 채팅을 보냈으면
-//			return;//그만둬!
-//		}
 		
 		//토큰 해석
 		MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(accessToken));
 		
 		//본문 추출
 		WebSocketRequestVO request = message.getPayload();//메세지 수신
-		
+	
 		WebSocketResponseVO response = new WebSocketResponseVO();
 		response.setContent(request.getContent());//사용자가 보낸 내용 그대로
 		response.setTime(LocalDateTime.now());//시간은 현재 시각으로 추가
@@ -92,52 +78,4 @@ public class WebSocketController {
 		websocketMessageDto.setWebsocketMessageTime(Timestamp.valueOf(response.getTime()));//시간 동기화
 		websocketMessageDao.insert(websocketMessageDto);
 	}
-	
-//	DM과 관련된 처리
-	@MessageMapping("/dm/{receiverId}")
-//	@SendTo("/public/dm/{receiverId}")
-	public void dm(@DestinationVariable String receiverId,
-								Message<WebSocketRequestVO> message) {
-		log.info("[DM] receiverId = {}", receiverId);
-		//헤더 추출
-		StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);//도구 생성
-		String accessToken = accessor.getFirstNativeHeader("accessToken");
-		//String refreshToken = accessor.getFirstNativeHeader("refreshToken");
-//		if(accessToken == null) {//비회원이 채팅을 보냈으면
-//			return;//그만둬!
-//		}
-		
-		//토큰 해석
-		MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(accessToken));
-		
-		//(+추가) 자신에게 보내는 메세지면 차단(허용도 가능)
-		if(claimVO.getMemberId().equals(receiverId)) {
-			return;
-		}
-		
-		//본문 추출
-		WebSocketRequestVO request = message.getPayload();//메세지 수신
-		
-		WebSocketDMResponseVO response = new WebSocketDMResponseVO();
-		response.setContent(request.getContent());//사용자가 보낸 내용 그대로
-		response.setTime(LocalDateTime.now());//시간은 현재 시각으로 추가
-		response.setSenderMemberId(claimVO.getMemberId());//발신자 회원아이디
-		response.setSenderMemberLevel(claimVO.getMemberLevel());//발신자의 회원등급
-		response.setReceiverMemberId(receiverId);//수신자 회원아이디
-		
-		messagingTemplate.convertAndSend("/public/dm/"+response.getSenderMemberId(), response);//발신자
-		messagingTemplate.convertAndSend("/public/dm/"+response.getReceiverMemberId(), response);//수신자
-		
-		//DB에 등록
-		int websocketMessageNo = websocketMessageDao.sequence();
-		WebsocketMessageDto websocketMessageDto = new WebsocketMessageDto();
-		websocketMessageDto.setWebsocketMessageNo(websocketMessageNo);
-		websocketMessageDto.setWebsocketMessageType("dm");
-		websocketMessageDto.setWebsocketMessageSender(response.getSenderMemberId());
-		websocketMessageDto.setWebsocketMessageReceiver(response.getReceiverMemberId());
-		websocketMessageDto.setWebsocketMessageContent(response.getContent());
-		websocketMessageDto.setWebsocketMessageTime(Timestamp.valueOf(response.getTime()));
-		websocketMessageDao.insert(websocketMessageDto);
-	}
-	
 }
