@@ -191,7 +191,7 @@ public class NoticeRestController {
 		}
 		
 		noticeDao.delete(noticeNo);// 게시글 삭제
-		noticeDao.deleteImage(noticeNo);// 연결 테입르 정보 삭제
+		noticeDao.deleteImage(noticeNo);// 연결 테입르 정보 삭제     
 	}
 	
 }
