@@ -198,6 +198,7 @@ public class ProductRestController {
 		// productDto.setProductState(requestVO.getProductState());
 		productDto.setProductQty(requestVO.getProductQty());
 		productDto.setProductCategory(requestVO.getProductCategory());
+		productDto.setProductNo(requestVO.getProductNo());
 
 		productDao.update(productDto);
 	
