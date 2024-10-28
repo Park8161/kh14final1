@@ -1,5 +1,6 @@
 package com.kh.fa.dao;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.ibatis.session.SqlSession;
@@ -9,7 +10,7 @@ import org.springframework.stereotype.Repository;
 import com.kh.fa.dto.ProductDto;
 import com.kh.fa.dto.RoomDto;
 import com.kh.fa.dto.RoomMemberDto;
-import com.kh.fa.vo.RoomVO;
+import com.kh.fa.vo.RoomListVO;
 
 @Repository
 public class RoomDao {
@@ -20,6 +21,7 @@ public class RoomDao {
 	@Autowired
 	private ProductDao productDao;
 	
+	
 	public int sequence() {
 		return sqlSession.selectOne("room.sequence");
 	}
@@ -28,14 +30,31 @@ public class RoomDao {
 		sqlSession.insert("room.insert", roomDto);
 	}
 	
-	// 전체 방 목록 조회
-	public List<RoomDto> selectList(){
-		return sqlSession.selectList("room.list");
-	}
-	
 	// 특정 회원이 참가 중인 방 목록 조회
-	public List<RoomVO> selectList(String memberId){
-		return sqlSession.selectList("room.listByMember", memberId);
+	public List<RoomListVO> selectList(String memberId){
+//		아이디를 통해서 참여중인 방 번호의 목록 추출
+		List<Integer> roomNoList = sqlSession.selectList("room.noList", memberId);
+		List<RoomListVO> list = new ArrayList<>();
+//		RoomListVO 에서 상품 정보, 마지막 메시지, 방 멤버 추출
+		for (int roomNo : roomNoList) {
+		    RoomMemberDto dto = new RoomMemberDto();
+		    dto.setMemberId(memberId);
+		    dto.setRoomNo(roomNo);
+		    boolean check = checkRemainMember(dto);
+		    if(check) {
+//		    	나 이외의 참여자가 있다면 
+		    	RoomListVO vo = sqlSession.selectOne("room.selectRoomListVO2", dto);   
+		    	if (vo != null) list.add(vo);
+		    }
+		    else {
+//		    	없다면
+		    	RoomListVO vo = sqlSession.selectOne("room.selectRoomListVO", dto);	
+		    	vo.setMemberId("상대방이 퇴장했습니다");
+		    	if (vo != null) list.add(vo);
+		    }
+		}
+
+		return list;
 	}
 	
 	public RoomDto selectOne(int roomNo) {
@@ -55,9 +74,9 @@ public class RoomDao {
 		sqlSession.insert("roomMember.enter", roomMemberDto);
 	}
 	
-	// 채팅방 퇴장
-	public boolean leave(RoomMemberDto roomMemberDto) {
-		return sqlSession.delete("roomMember.leave", roomMemberDto) > 0;
+//	채팅방 퇴장 
+	public void leave(RoomMemberDto roomMemberDto) {
+		sqlSession.delete("roomMember.leave", roomMemberDto);
 	}
 	
 	// 채팅방 자격 검사
@@ -82,5 +101,14 @@ public class RoomDao {
 		return productDao.selectOne(productNo);
 	}
 	
+	public boolean checkRemainMember(RoomMemberDto roomMemberDto) {
+//		채팅방 멤버 중 나를 제외한 참가자의 수
+		int result =  sqlSession.selectOne("roomMember.checkRemainMember", roomMemberDto);
+		return result > 0;
+	}
+	
+	public String selectAnother(RoomMemberDto roomMemberDto) {
+		return sqlSession.selectOne("roomMember.selectAnother", roomMemberDto);
+	}
 	
 }

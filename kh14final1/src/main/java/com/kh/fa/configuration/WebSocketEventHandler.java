@@ -56,7 +56,7 @@ public class WebSocketEventHandler {
 		// 저장소에 사용자 등록
 		userList.put(sessionId, claimVO.getMemberId());
 		
-//		log.info("사용자 접속 완료, 인원수 = {}, 세션 = {}, 아이디 = {}", userList.size(), sessionId, claimVO.getMemberId());
+		log.info("사용자 접속 완료, 인원수 = {}, 세션 = {}, 아이디 = {}", userList.size(), sessionId, claimVO.getMemberId());
 	}
 	
 	@EventListener // 구독 이벤트
@@ -87,27 +87,7 @@ public class WebSocketEventHandler {
 		else if(accessor.getDestination().startsWith("/public/db")) { // 회원
 			// 채널명이 /public/db/xxx일 것이므로 xxx을 원한다면 /public/db/를 제거
 			String memberId = accessor.getDestination().substring("/public/db/".length());
-			// DB조회 - 이 회원이 볼 수 있는 메세지를 100개 조회하여 전송
-//			VO들과 Dto의 형태가 달라 변환을 해주어야 함 >> 클래스의 통폐합과 sql구문 변환을 통해 해결 가능
-//			List<WebsocketMessageDto> messageList = websocketMessageDao.selectListMember(memberId, 1, 100);
-//			List<Object> convertList = messageList.stream()
-//												.map(messageDto->{
-//													if(messageDto.getWebsocketMessageType().equals("dm")) {
-//														WebSocketDMResponseVO response = new WebSocketDMResponseVO();
-//														response.setSenderMemberId(messageDto.getWebsocketMessageSender());
-//														response.setReceiverMemberId(messageDto.getWebsocketMessageReceiver());
-//														response.setContent(messageDto.getWebsocketMessageContent());
-//														response.setTime(messageDto.getWebsocketMessageTime().toLocalDateTime());
-//														return response;
-//													}
-//													// 일반
-//													WebSocketResponseVO response = new WebSocketResponseVO();
-//													response.setSenderMemberId(messageDto.getWebsocketMessageSender());
-//													response.setContent(messageDto.getWebsocketMessageContent());
-//													response.setTime(messageDto.getWebsocketMessageTime().toLocalDateTime());
-//													return response;
-//												})
-//												.collect(Collectors.toList());
+			
 			List<WebsocketMessageVO> messageList = websocketMessageDao.selectListMemberComplete(memberId, 1, 100);
 			if(messageList.isEmpty()) return;
 			
@@ -152,7 +132,7 @@ public class WebSocketEventHandler {
 		// 저장소에서 사용자 제거
 		userList.remove(sessionId);
 		
-//		log.info("사용자 접속 종료, 인원수 = {}, 세션 = {}", userList.size(), sessionId);
+		log.info("사용자 접속 종료, 인원수 = {}, 세션 = {}", userList.size(), sessionId);
 		
 		// 채널 /users에 전파
 		Set<String> values = new TreeSet<>(userList.values());

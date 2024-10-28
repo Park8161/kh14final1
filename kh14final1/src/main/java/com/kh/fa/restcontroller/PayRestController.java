@@ -21,6 +21,7 @@ import com.kh.fa.dao.PaymentDao;
 import com.kh.fa.dao.ProductDao;
 import com.kh.fa.dto.PaymentDto;
 import com.kh.fa.dto.ProductDto;
+import com.kh.fa.error.TargetNotFoundException;
 import com.kh.fa.service.KakaoPayService;
 import com.kh.fa.service.TokenService;
 import com.kh.fa.vo.MemberClaimVO;
@@ -55,6 +56,8 @@ public class PayRestController {
 			) throws URISyntaxException {
 		MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(token));		
 		int productNo = prRequest.getProductNo();
+		if(productDao.selectOne(productNo).getProductState().equals("판매완료")
+				) {throw new TargetNotFoundException("이미 판매된 상품입니다");}
 		
 		ProductDto productDto = productDao.selectOne(productNo);
 		
@@ -74,7 +77,7 @@ public class PayRestController {
 	
 	@Transactional
 	@PostMapping("/approve")
-	public KakaoPayApproveResponseVO approve(
+	public PaymentDto approve(
 			@RequestHeader("Authorization") String token,
 			@RequestBody ProductApproveRequestVO prRequest
 			) throws URISyntaxException {
@@ -108,17 +111,9 @@ public class PayRestController {
 		
 		paymentDao.setSoldOut(prRequest.getProductNo());
 		
-//		int paymentDetailSeq = paymentDao.paymentDetailSequence();//번호 추출
-//		PaymentDetailDto paymentDetailDto = new PaymentDetailDto();
-//		paymentDetailDto.setPaymentDetailNo(paymentDetailSeq);//번호 설정
-//		paymentDetailDto.setPaymentDetailName(productDto.getProductName());//상품명(도서명) 설정
-//		paymentDetailDto.setPaymentDetailPrice(productDto.getProductPrice());//상품판매가(도서가격) 설정
-//		paymentDetailDto.setPaymentDetailItem(prRequest.getProductNo());//상품번호(도서번호) 설정
-//		paymentDetailDto.setPaymentDetailQty(1);//구매수량
-//		paymentDetailDto.setPaymentDetailOrigin(paymentSeq);//결제대표번호
-//		paymentDao.paymentDetailInsert(paymentDetailDto);
+		PaymentDto result = paymentDao.selectOne(paymentSeq);
 		
-		return responseVO;
+		return result;
 	}
 	
 	@GetMapping("/list")
@@ -135,7 +130,6 @@ public class PayRestController {
 				tokenService.check(tokenService.removeBearer(token));
 //		결제한 상품 번호 리스트
 		List<Integer> prNoList = paymentDao.selectPaidPr(claimVO.getMemberId());
-//		System.out.println("prNoList"+prNoList);
 	    List<PaymentImageVO> paymentImageList = new ArrayList<>();
 
 	    for(int no : prNoList) {
@@ -145,7 +139,6 @@ public class PayRestController {
 	            paymentImageList.add(paymentImageVO); //
 	        }
 	    }
-//	    System.out.println("디버깅"+paymentImageList);
 		return paymentImageList;
 	}
 	

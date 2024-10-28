@@ -21,7 +21,7 @@ import com.kh.fa.dto.RoomMemberDto;
 import com.kh.fa.error.TargetNotFoundException;
 import com.kh.fa.service.TokenService;
 import com.kh.fa.vo.MemberClaimVO;
-import com.kh.fa.vo.RoomVO;
+import com.kh.fa.vo.RoomListVO;
 
 @CrossOrigin
 @RestController
@@ -62,9 +62,10 @@ public class RoomRestController {
 			int roomNo = roomDao.sequence();
 			RoomDto roomDto = new RoomDto();
 			RoomMemberDto roomSellerDto = new RoomMemberDto();
+			String roomName = sellerId +", "+ claimVO.getMemberId();
 			
 			roomDto.setRoomNo(roomNo);
-			roomDto.setRoomName(sellerId); //방이름은 판매자 아이디로 자동 설정
+			roomDto.setRoomName(roomName); //방이름은 판매자 아이디로 자동 설정
 			
 			roomBuyerDto.setRoomNo(roomNo);
 			
@@ -85,7 +86,7 @@ public class RoomRestController {
 	}
 	
 	@GetMapping("/")
-	public List<RoomVO> list(
+	public List<RoomListVO> list(
 			@RequestHeader("Authorization") String token
 			) {
 		MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(token));
@@ -97,26 +98,21 @@ public class RoomRestController {
 		roomDao.delete(roomNo);
 	}
 	
-	@PostMapping("/enter")
-	public void enter(@RequestHeader("Authorization") String token, @RequestBody RoomMemberDto roomMemberDto) {
-		// 방이 없는 경우를 사전 차단
-		RoomDto roomDto = roomDao.selectOne(roomMemberDto.getRoomNo());
-		if(roomDto == null) throw new TargetNotFoundException("존재하지 않는 방");
-		
-		MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(token));
-		roomMemberDto.setMemberId(claimVO.getMemberId()); // 아이디 설정
-		roomDao.enter(roomMemberDto); // 등록
-	}
-	
 	@PostMapping("/leave")
 	public void leave(@RequestHeader("Authorization") String token, @RequestBody RoomMemberDto roomMemberDto) {
 		// 방이 없는 경우를 사전 차단
+		MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(token));
+		roomMemberDto.setMemberId(claimVO.getMemberId());
+		
 		RoomDto roomDto = roomDao.selectOne(roomMemberDto.getRoomNo());
 		if(roomDto == null) throw new TargetNotFoundException("존재하지 않는 방");
 		
-		MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(token));
-		roomMemberDto.setMemberId(claimVO.getMemberId()); // 아이디 설정
-		roomDao.leave(roomMemberDto); // 삭제
+//		방에 남은 회원이 없다면 방을 삭제 
+		if(!roomDao.checkRemainMember(roomMemberDto)) {
+			roomDao.delete(roomMemberDto.getRoomNo());
+		}
+		else
+		roomDao.leave(roomMemberDto); // 퇴장
 	}
 	
 	@GetMapping("/check/{roomNo}")

@@ -35,5 +35,13 @@
 		FROM room_member 
 		WHERE room_no = #{roomNo}
 	</select>
+		
+	<select id="checkRemainMember" resultType="int">
+	SELECT count(member_id) FROM room_member WHERE room_no = #{roomNo} AND member_id != #{memberId}
+	</select>
+	
+	<select id="selectAnother" resultType="java.lang.String">	
+	SELECT MEMBER_id FROM room_member WHERE member_id != #{memberId} AND room_no = #{roomNo}
+	</select>
 	
 </mapper>

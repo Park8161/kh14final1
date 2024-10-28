@@ -82,28 +82,29 @@ public class KakaoPayRestController {
 		return kakaoPayService.order(request);
 	}
 	
-	// 결제 상세 내역
-	@GetMapping("/detail/{paymentNo}")
-	public PaymentInfoVO detail(@RequestHeader("Authorization") String token, @PathVariable int paymentNo) throws URISyntaxException {
-		// 결제 내역
-		PaymentDto paymentDto = paymentDao.selectOne(paymentNo);
-		if(paymentDto == null) throw new TargetNotFoundException("존재하지 않는 결제내역");
-		// 본인 소유 검증
-		MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(token));
-		if(paymentDto.getPaymentBuyer().equals(claimVO.getMemberId()) == false) throw new TargetNotFoundException("결제내역의 소유자가 아닙니다");
-		// 결제 상세 내역
-		List<PaymentDetailDto> list = paymentDao.selectDetailList(paymentNo);
-		// 카카오페이 조회내역
-		KakaoPayOrderRequestVO requestVO = new KakaoPayOrderRequestVO();
-		requestVO.setTid(paymentDto.getPaymentTid());
-		KakaoPayOrderResponseVO responseVO = kakaoPayService.order(requestVO);
-		// 반환 형태 생성
-		PaymentInfoVO infoVO = new PaymentInfoVO();
-		infoVO.setPaymentDto(paymentDto);
-		infoVO.setPaymentDetailList(list);
-		infoVO.setResponseVO(responseVO);
-		return infoVO;
-	}
+//	// 결제 상세 내역
+//	@GetMapping("/detail/{paymentNo}")
+//	public PaymentInfoVO detail(@RequestHeader("Authorization") String token, 
+//			@PathVariable int paymentNo) throws URISyntaxException {
+//		// 결제 내역
+//		PaymentDto paymentDto = paymentDao.selectOne(paymentNo);
+//		if(paymentDto == null) throw new TargetNotFoundException("존재하지 않는 결제내역");
+//		// 본인 소유 검증
+//		MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(token));
+//		if(paymentDto.getPaymentBuyer().equals(claimVO.getMemberId()) == false) throw new TargetNotFoundException("결제내역의 소유자가 아닙니다");
+//		// 결제 상세 내역
+//		List<PaymentDetailDto> list = paymentDao.selectDetailList(paymentNo);
+//		// 카카오페이 조회내역
+//		KakaoPayOrderRequestVO requestVO = new KakaoPayOrderRequestVO();
+//		requestVO.setTid(paymentDto.getPaymentTid());
+//		KakaoPayOrderResponseVO responseVO = kakaoPayService.order(requestVO);
+//		// 반환 형태 생성
+//		PaymentInfoVO infoVO = new PaymentInfoVO();
+//		infoVO.setPaymentDto(paymentDto);
+//		infoVO.setPaymentDetailList(list);
+//		infoVO.setResponseVO(responseVO);
+//		return infoVO;
+//	}
 	
 	// 결제 취소 - 전체취소는 paymentNo 요구, 항목취소는 paymentDetailNo 요구
 	// 전체 취소
@@ -128,31 +129,7 @@ public class KakaoPayRestController {
 		paymentDao.cancelAllItem(paymentNo); // 될거면 한번에 다 되어야 함 >> Transactional
 		return response;
 	}
+
 	
-	// 부분 취소
-	@DeleteMapping("/cancelItem/{paymentDetailNo}")
-	public KakaoPayCancelResponseVO cancelItem(@RequestHeader("Authorization") String token, @PathVariable int paymentDetailNo) throws URISyntaxException {
-		// 결제 내역 확인
-		PaymentDetailDto paymentDetailDto = paymentDao.selectDetailOne(paymentDetailNo);
-		if(paymentDetailDto == null) throw new TargetNotFoundException("존재하지 않는 결제정보");
-		PaymentDto paymentDto = paymentDao.selectOne(paymentDetailDto.getPaymentDetailOrigin());
-		if(paymentDto == null) throw new TargetNotFoundException("존재하지 않는 결제정보");
-		// 본인 소유 검증
-		MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(token));
-		if(paymentDto.getPaymentBuyer().equals(claimVO.getMemberId()) == false) throw new TargetNotFoundException("소유자 불일치");
-		if(paymentDto.getPaymentRemain() == 0) throw new TargetNotFoundException("이미 취소된 결제");
-		// [1] 카카오페이에 취소 요청 보낸다
-		int money = paymentDetailDto.getPaymentDetailPrice() * paymentDetailDto.getPaymentDetailQty(); // 해당 항목의 금액
-		KakaoPayCancelRequestVO request = new KakaoPayCancelRequestVO();
-		request.setTid(paymentDto.getPaymentTid());
-		request.setCancelAmount(money);
-		KakaoPayCancelResponseVO response = kakaoPayService.cancel(request);
-		// [2] 결제 상세 테이블의 해당 항목의 상태를 취소로 변경
-		paymentDao.cancelItem(paymentDetailNo);
-		// [3] 결제 대표 테이블의 잔여 금액을 해당 항목의 금액만큼 차감
-		paymentDao.decreaseItemRemain(paymentDto.getPaymentNo(), money);
-		// paymentDao.decreaseItemRemain(paymentDetailDto.getPaymentDetailOrigin(), money); // 이것도 가능
-		return response;
-	}
 	
 }
