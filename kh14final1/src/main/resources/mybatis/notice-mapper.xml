@@ -49,16 +49,22 @@
 	<!-- 수정(관리자만) -->
 	<update id="edit">
 		update notice
-		set notice_type = #{noticeType},
-		notice_title = #{noticeTitle},
-		notice_content = #{noticeContent},
-		notice_utime = sysdate
+		set 
+			notice_type = #{noticeType},
+			notice_title = #{noticeTitle},
+			notice_content = #{noticeContent},
+			notice_utime = sysdate
 		where notice_no = #{noticeNo}
 	</update>
+	
+	
 
 	<!-- 삭제 -->
 	<delete id="delete">
 		delete notice where notice_no = #{noticeNo}
+	</delete>
+	<delete id="removeImage">
+		delete banner where notice =#{noticeNo}
 	</delete>
 
 	<!-- 검색 -->

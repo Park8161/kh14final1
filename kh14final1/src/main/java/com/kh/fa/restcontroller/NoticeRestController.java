@@ -123,7 +123,7 @@ public class NoticeRestController {
 	
 	//수정
 	@Transactional
-	@PutMapping(value = "/edit/", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	@PostMapping(value = "/edit", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public void update(
 			@ModelAttribute NoticeEditRequestVO requestVO) throws IllegalStateException, IOException {
 		//공지사항 업데이트
@@ -132,7 +132,7 @@ public class NoticeRestController {
 //			throw new TargetNotFoundException();
 //		}
 		NoticeDto originDto = noticeDao.selectOne(requestVO.getNoticeNo());
-		if(originDto == null) throw new TargetNotFoundException("존재지 않는 게시글");
+		if(originDto == null) throw new TargetNotFoundException("존재하지 않는 게시글");
 		
 		// 이미지 처리 수정 전
 		Set<Integer> before = new HashSet<>();
@@ -152,9 +152,6 @@ public class NoticeRestController {
 			after.add(attachmentNo);
 		}
 
-		//ㅋㅋ
-
-		//ㅋ
 		//수정전 - 수정후 계산
 		before.removeAll(after);
 		
@@ -176,6 +173,7 @@ public class NoticeRestController {
 		noticeDto.setNoticeTitle(requestVO.getNoticeTitle());
 		noticeDto.setNoticeContent(requestVO.getNoticeContent());
 		noticeDto.setNoticeType(requestVO.getNoticeType());
+		noticeDto.setNoticeNo(requestVO.getNoticeNo());
 		
 		noticeDao.update(noticeDto);	
 	}
