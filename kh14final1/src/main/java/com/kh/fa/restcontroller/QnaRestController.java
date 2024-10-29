@@ -14,12 +14,15 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kh.fa.dao.MemberDao;
 import com.kh.fa.dao.QnaDao;
+import com.kh.fa.dao.ReplyDao;
 import com.kh.fa.dto.MemberDto;
 import com.kh.fa.dto.QnaDto;
+import com.kh.fa.dto.ReplyDto;
 import com.kh.fa.error.TargetNotFoundException;
 import com.kh.fa.service.TokenService;
 import com.kh.fa.vo.MemberClaimVO;
@@ -37,6 +40,8 @@ public class QnaRestController {
 	private TokenService tokenService;
 	@Autowired
 	private MemberDao memberDao;
+	@Autowired
+	private ReplyDao replyDao;
 	
 	//등록
 	@PostMapping(value = "/insert")
@@ -95,8 +100,22 @@ public class QnaRestController {
 	}
 	
 	@DeleteMapping("/delete/{qnaNo}")//삭제
-	public void delete(@PathVariable int qnaNo) {
-		qnaDao.delete(qnaNo);
+	public void delete(@RequestHeader("Authorization") String token,
+			@PathVariable int qnaNo) throws IllegalStateException, IOException{
+		
+		// 토큰 변환
+	    MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(token));
+	    
+	    if (!claimVO.getMemberId().equals(claimVO.getMemberId())) {
+            throw new IllegalStateException("본인의 글만 삭제할 수 있습니다.");
+        }
+	    QnaDto qnaDto = qnaDao.selectOne(qnaNo);
+	    if(qnaDto == null) {
+			throw new TargetNotFoundException("");
+		}
+	    boolean isOwner =  qnaDto.getQnaWriter().equals(claimVO.getMemberId());
+	    if(isOwner) {
+	    	qnaDao.delete(qnaNo);
+	    }
 	}
-	
 }

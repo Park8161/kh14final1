@@ -54,4 +54,7 @@ public class QnaDao {
 	public int countWithPaging(QnaListRequestVO vo) {
 		return sqlSession.selectOne("qna.count", vo);
 	}
+	public boolean updateQnaReplies(int qnaNo) { 
+		return sqlSession.update("reply.count", qnaNo) > 0;
+	}
 }
