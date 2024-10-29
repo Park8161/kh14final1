@@ -30,6 +30,18 @@
 		where reply_no = #{replyNo}
 	</update>
 	
+	<!-- 카운트 -->
+	<update id="count" >
+		update qna set qna_replies
+		= (select count(*) from reply where reply_qna = #{qnaNo}
+			) where qna_no = #{qnaNo}
+	</update> 
+	
+	<!-- 상세 -->
+	<select id="detail" resultType="ReplyDto">
+		select * from reply where reply_no = #{replyNo}
+	</select>
+		
 	<!-- 삭제 -->
 	<delete id="delete">
 		delete from reply where reply_no = #{replyNo}

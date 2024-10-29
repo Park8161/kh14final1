@@ -52,7 +52,7 @@
 	
 	<!-- 삭제 -->
 	<delete id="delete">
-		delete qna where qna_no = #{qnaNo}
+		delete from qna where qna_no = #{qnaNo}
 	</delete>
 	
 	<!-- 검색 --> 

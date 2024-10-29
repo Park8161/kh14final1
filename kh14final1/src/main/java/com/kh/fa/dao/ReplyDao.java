@@ -38,5 +38,8 @@ public class ReplyDao {
     public boolean delete(int replyNo) {
         return sqlSession.delete("reply.delete", replyNo) > 0;
     }
-    
+    // 상세
+    public ReplyDto selectOne(int replyNo) {
+    	return sqlSession.selectOne("reply.detail", replyNo);
+    }
 }
