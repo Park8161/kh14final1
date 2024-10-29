@@ -13,6 +13,7 @@ import org.springframework.stereotype.Controller;
 
 import com.kh.fa.dao.RoomDao;
 import com.kh.fa.dao.RoomMessageDao;
+import com.kh.fa.dao.UnreadDao;
 import com.kh.fa.dto.RoomMemberDto;
 import com.kh.fa.dto.RoomMessageDto;
 import com.kh.fa.dto.UnreadDto;
@@ -32,6 +33,8 @@ public class RoomMessageController {
 	private RoomMessageDao roomMessageDao;
 	@Autowired
 	private RoomDao roomDao;
+	@Autowired
+	private UnreadDao unreadDao;
 	
 	@MessageMapping("/room/{roomNo}")
 	public void chat(@DestinationVariable int roomNo, Message<WebSocketRequestVO> message) {
@@ -47,12 +50,22 @@ public class RoomMessageController {
 //		상대방 아이디
 		String anotherMember = roomDao.selectAnother(roomMemberDto);
 		System.out.println("anoterMember/roomMemssageController"+anotherMember);
-		UnreadDto unreadDto = new UnreadDto();
-//		unread Dto에 roomNo, memberId, unread(count) 반환 
-		unreadDto.setMemberId(anotherMember);
-		unreadDto.setRoomNo(roomNo);
 		
-//		있으면 업데이트 없으면 생성 (dao에서 처리)
+		if(anotherMember != null) {
+			UnreadDto unreadDto = new UnreadDto();
+//			unread Dto에 roomNo, memberId, unread(count) 삽입
+			unreadDto.setMemberId(anotherMember);
+			unreadDto.setRoomNo(roomNo);
+			System.out.println("unreadDto/roomMemssageController: "+unreadDto);
+//			있으면 업데이트
+			if(unreadDao.selectOne(unreadDto) != null) {
+				unreadDao.update(unreadDto);
+			}
+//			없으면 생성
+			else if(unreadDao.selectOne(unreadDto) == null){
+				unreadDao.insert(unreadDto);	
+			}	
+		}
 		
 		WebSocketRequestVO request = message.getPayload(); // 메세지 추출 (본문)
 		

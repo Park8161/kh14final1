@@ -21,6 +21,9 @@ public class RoomDao {
 	@Autowired
 	private ProductDao productDao;
 	
+	@Autowired
+	private UnreadDao unreadDao;
+	
 	
 	public int sequence() {
 		return sqlSession.selectOne("room.sequence");
@@ -44,12 +47,16 @@ public class RoomDao {
 		    if(check) {
 //		    	나 이외의 참여자가 있다면 
 		    	RoomListVO vo = sqlSession.selectOne("room.selectRoomListVO2", dto);   
+		    	int unreadCnt = unreadDao.count(dto);
+		    	vo.setUnreadCnt(unreadCnt);
 		    	if (vo != null) list.add(vo);
 		    }
 		    else {
 //		    	없다면
-		    	RoomListVO vo = sqlSession.selectOne("room.selectRoomListVO", dto);	
+//		    	vo null exeption 발생 상대방이 나갔을 때 
+		    	RoomListVO vo = new RoomListVO();
 		    	vo.setMemberId("상대방이 퇴장했습니다");
+		    	vo = sqlSession.selectOne("room.selectRoomListVO", dto);	
 		    	if (vo != null) list.add(vo);
 		    }
 		}
