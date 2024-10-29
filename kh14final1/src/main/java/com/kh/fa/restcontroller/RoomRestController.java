@@ -15,9 +15,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.kh.fa.dao.ProductDao;
 import com.kh.fa.dao.RoomDao;
+import com.kh.fa.dao.UnreadDao;
 import com.kh.fa.dto.ProductDto;
 import com.kh.fa.dto.RoomDto;
 import com.kh.fa.dto.RoomMemberDto;
+import com.kh.fa.dto.UnreadDto;
 import com.kh.fa.error.TargetNotFoundException;
 import com.kh.fa.service.TokenService;
 import com.kh.fa.vo.MemberClaimVO;
@@ -36,6 +38,9 @@ public class RoomRestController {
 	
 	@Autowired 
 	private ProductDao productDao;
+	
+	@Autowired 
+	private UnreadDao unreadDao;
 	
 	
 //	채팅방 생성 or 입장 
@@ -134,6 +139,26 @@ public class RoomRestController {
 //		roomNo -> productNo -> productInfo
 		ProductDto productDto = roomDao.getProductInfo(roomNo);
 		return productDto;
+	}
+	
+	@PostMapping("/setzero/{roomNo}")
+	public void setZero(@RequestHeader("Authorization") String token, 
+			@PathVariable int roomNo) {
+		MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(token));
+		UnreadDto unreadDto = new UnreadDto();
+		unreadDto.setMemberId(claimVO.getMemberId());
+		unreadDto.setRoomNo(roomNo);
+		unreadDao.setZero(unreadDto);
+	}
+	
+	@GetMapping("/cntunread/{roomNo}")
+	public int getProductInfo(@RequestHeader("Authorization") String token, 
+			@PathVariable int roomNo) {
+		MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(token));
+		UnreadDto unreadDto = new UnreadDto();
+		unreadDto.setMemberId(claimVO.getMemberId());
+		unreadDto.setRoomNo(roomNo);
+		return unreadDao.count(unreadDto);
 	}
 	
 }

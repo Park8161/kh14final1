@@ -4,7 +4,27 @@
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<!-- (주의) 결제와 결제상세를 같은 곳에서 처리 -->
 <mapper namespace="unread">
+
+	<select id="find" resultType="UnreadDto">
+		SELECT * FROM unread WHERE room_no = #{roomNo} AND member_id = #{memberId}
+	</select>
+	
+	<insert id="insert">
+	INSERT INTO unread (room_no, member_id, unread)
+	 values(#{roomNo}, #{memberId}, 1)
+	</insert>
+
+	<update id="update">
+	UPDATE unread SET unread = unread+1 WHERE room_no = #{roomNo} AND member_id=#{memberId}
+	</update>
+	
+	<update id="setZero">
+	UPDATE unread SET unread = 0 WHERE room_no = #{roomNo} AND member_id = #{memberId}
+	</update>
+	
+	<select id="count" resultType="int">
+	SELECT unread FROM unread WHERE room_no = #{roomNo} AND member_id=#{memberId}
+	</select>
 
 </mapper>

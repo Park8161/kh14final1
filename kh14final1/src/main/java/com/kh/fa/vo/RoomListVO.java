@@ -12,4 +12,5 @@ public class RoomListVO {
 	private String memberId;
 	private String roomMessageContent;
 	private Timestamp roomMessageTime;
+	private int unreadCnt;
 }
