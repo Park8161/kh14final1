@@ -13,5 +13,5 @@ public class WebSocketFileResponseVO {
 	private String senderMemberId; // 발신자
 	private String senderMemberLevel; // 발신자의 등급
 	private LocalDateTime time; // 발신 시각
-	private byte[] file; // 보낸 파일 데이터
+	private int image;// 보낸 파일 데이터
 }

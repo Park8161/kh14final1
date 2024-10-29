@@ -1,7 +1,9 @@
 package com.kh.fa.dao;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -116,6 +118,24 @@ public class RoomDao {
 	
 	public String selectAnother(RoomMemberDto roomMemberDto) {
 		return sqlSession.selectOne("roomMember.selectAnother", roomMemberDto);
+	}
+	
+	// 채팅방 테이블과 첨부테이블을 연결
+	public void connect(int roomNo, int attachmentNo) {
+		Map<String, Object> params = new HashMap<>();
+		params.put("roomNo", roomNo);
+		params.put("attachmentNo", attachmentNo);
+		sqlSession.insert("room.connect", params);
+	}
+	
+	// 채팅방 이미지 찾기
+	public Integer findImage(int roomNo) {
+		return sqlSession.selectOne("room.findImage", roomNo);
+	}
+	
+	// 채팅방 이미지 찾기 - 여러 이미지를 가져오기
+	public List<Integer> findImages(int roomNo) {
+		return sqlSession.selectList("room.findImages", roomNo);
 	}
 	
 }
