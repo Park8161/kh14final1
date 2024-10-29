@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.kh.fa.dto.NoticeDto;
+import com.kh.fa.vo.BannerListVO;
 import com.kh.fa.vo.NoticeListRequestVO;
 
 @Repository
@@ -76,6 +77,11 @@ public class NoticeDao {
 	//이미지 삭제
 	public boolean deleteImage(int noticeNo) {
 		return sqlSession.delete("notice.removeImage", noticeNo) > 0;	
+	}
+	
+	//홈 배너와 이벤트 게시물 연결
+	public List<BannerListVO> selectLinkList() {
+		return sqlSession.selectList("notice.bannerList");
 	}
 }
 

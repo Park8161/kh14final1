@@ -119,14 +119,16 @@
 		delete banner where notice = #{noticeNo}
 	</delete>
 	
+	<!-- 배너와 이벤트 게시판 연결 메소드 -->
 	<select id="bannerList" resultType="BannerListVO">
 		select N.notice_no, I.attachment from notice N
+		left outer join banner I on N.notice_no = I.notice
   		where 
 	  		I.attachment = (
 	  				select min(attachment) from banner
 	  				where notice = N.notice_no
 	  			)  		
-  		and notice_type = '이벤트'
+  		and N.notice_type = '이벤트'
 	</select>
 	
 

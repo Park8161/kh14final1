@@ -15,8 +15,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -29,6 +27,7 @@ import com.kh.fa.dto.NoticeDto;
 import com.kh.fa.error.TargetNotFoundException;
 import com.kh.fa.service.AttachmentService;
 import com.kh.fa.service.TokenService;
+import com.kh.fa.vo.BannerListVO;
 import com.kh.fa.vo.MemberClaimVO;
 import com.kh.fa.vo.NoticeDetailResponseVO;
 import com.kh.fa.vo.NoticeEditRequestVO;
@@ -191,5 +190,20 @@ public class NoticeRestController {
 		noticeDao.delete(noticeNo);// 게시글 삭제
 		noticeDao.deleteImage(noticeNo);// 연결 테입르 정보 삭제     
 	}
+
+	//홈 배너와 이벤트게시물 연결
+	@GetMapping("/bannerList")
+	public List<BannerListVO> bannerList() {
+		return noticeDao.selectLinkList();
+	}
+	
 	
 }
+
+
+
+
+
+
+
+
