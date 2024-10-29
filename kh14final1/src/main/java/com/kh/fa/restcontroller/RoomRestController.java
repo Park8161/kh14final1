@@ -1,8 +1,12 @@
 package com.kh.fa.restcontroller;
 
+import java.awt.print.Printable;
+import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,7 +16,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.kh.fa.dao.MemberDao;
 import com.kh.fa.dao.ProductDao;
 import com.kh.fa.dao.RoomDao;
 import com.kh.fa.dao.UnreadDao;
@@ -21,9 +27,12 @@ import com.kh.fa.dto.RoomDto;
 import com.kh.fa.dto.RoomMemberDto;
 import com.kh.fa.dto.UnreadDto;
 import com.kh.fa.error.TargetNotFoundException;
+import com.kh.fa.service.AttachmentService;
 import com.kh.fa.service.TokenService;
 import com.kh.fa.vo.MemberClaimVO;
 import com.kh.fa.vo.RoomListVO;
+import com.kh.fa.vo.WebSocketFileResponseVO;
+import com.kh.fa.vo.WebsocketFileRequestVO;
 
 @CrossOrigin
 @RestController
@@ -159,6 +168,50 @@ public class RoomRestController {
 		unreadDto.setMemberId(claimVO.getMemberId());
 		unreadDto.setRoomNo(roomNo);
 		return unreadDao.count(unreadDto);
+	}
+	
+	// 이미지 전송하는 코드
+		@Autowired
+		AttachmentService attachmentService;
+		@Autowired
+		MemberDao memberDao;
+		@Autowired
+		private SimpMessagingTemplate messagingTemplate;
+		
+		@PostMapping("/fileSend/{roomNo}")
+		public void file(@PathVariable int roomNo,
+									@RequestHeader("Authorization") String token,
+									WebsocketFileRequestVO request
+									) throws IllegalStateException, IOException {
+			//토큰 변환
+			MemberClaimVO claimVo = tokenService.check(tokenService.removeBearer(token));
+			
+			//이미지를 저장
+			for(MultipartFile attach : request.getAttachList()) {
+				if(attach.isEmpty()) continue;
+				int attachmentNo = attachmentService.save(attach);
+				roomDao.connect(roomNo, attachmentNo);
+			}
+			
+			//이미지를 찾아서
+			int image = roomDao.findImage(roomNo);
+			
+			//보냄
+			WebSocketFileResponseVO response = new WebSocketFileResponseVO();
+			response.setSenderMemberId(claimVo.getMemberId());
+			response.setSenderMemberLevel(claimVo.getMemberLevel());
+			response.setTime(LocalDateTime.now());
+			response.setImage(image);
+			
+			messagingTemplate.convertAndSend("/private/chat/"+roomNo+"/file", response);
+		}
+		
+	// 이미지 로드 코드
+	@GetMapping("/imageList/{roomNo}")
+	public List<Integer> list(@PathVariable int roomNo) {
+		List<Integer> image = roomDao.findImages(roomNo);
+
+		return image;
 	}
 	
 }

@@ -77,4 +77,19 @@ LEFT JOIN
 WHERE rm.ROOM_NO = #{roomNo} AND rm.MEMBER_ID != #{memberId}
 	</select>
 	
+	<!--  첨부 테이블 연경 -->
+	<insert id="connect" parameterType="map">
+		insert into room_image(room_image_no, room_image_attachment)
+		values(#{roomNo}, #{attachmentNo})
+	</insert>
+	
+	<!-- 이미지 하나 가져오기 -->
+	<select id="findImage" resultType="Integer">
+		select min(room_image_attachment) from room_image where room_image_no = #{roomNo}
+	</select>
+	
+	<!-- 여러 이미지를 가져오는 메소드 -->
+  	<select id="findImages"  resultType="Integer">
+  		select room_image_attachment from room_image where room_image_no = #{roomNo}
+  	</select>
 </mapper>
