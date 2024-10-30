@@ -124,7 +124,10 @@ public class NoticeRestController {
 	@Transactional
 	@PostMapping(value = "/edit", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public void update(
+			@RequestHeader("Authorization") String token,
 			@ModelAttribute NoticeEditRequestVO requestVO) throws IllegalStateException, IOException {
+		// 토큰 변환
+	    MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(token));
 		//공지사항 업데이트
 //		boolean result = noticeDao.update(noticeDto);
 //		if(result == false) {
@@ -132,6 +135,12 @@ public class NoticeRestController {
 //		}
 		NoticeDto originDto = noticeDao.selectOne(requestVO.getNoticeNo());
 		if(originDto == null) throw new TargetNotFoundException("존재하지 않는 게시글");
+		
+		//작성자 확인
+				boolean isOwner = originDto.getNoticeWriter().equals(claimVO.getMemberId());
+				if(!isOwner) {
+					throw new IllegalStateException("본인의 글만 수정할 수 있습니다.");
+				}
 		
 		// 이미지 처리 수정 전
 		Set<Integer> before = new HashSet<>();
@@ -178,19 +187,33 @@ public class NoticeRestController {
 	}
 	
 	@DeleteMapping("/delete/{noticeNo}")//삭제
-	public void delete(@PathVariable int noticeNo) {
+	public void delete(
+			@RequestHeader("Authorization") String token,
+			@PathVariable int noticeNo) throws IllegalStateException, IOException {
+		
+		// 토큰 변환
+	    MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(token));
+	    
+	    if (!claimVO.getMemberId().equals(claimVO.getMemberId())) {
+            throw new IllegalStateException("본인의 글만 삭제할 수 있습니다.");
+        }
+	    
 		NoticeDto noticeDto = noticeDao.selectOne(noticeNo);
-		if(noticeDto == null) throw new TargetNotFoundException("존재하지 않는 게시글");
+		if(noticeDto == null)
+			throw new TargetNotFoundException("존재하지 않는 게시글");
 		
 		List<Integer> list = noticeDao.findImages(noticeNo);
 		for(int i=0;i<list.size();i++) {
 			attachmentService.delete(list.get(i));
 		}
-		
+		boolean isOwner =  noticeDto.getNoticeWriter().equals(claimVO.getMemberId());
+	    if(isOwner) {
+	    	noticeDao.delete(noticeNo);
+	    	
 		noticeDao.delete(noticeNo);// 게시글 삭제
-		noticeDao.deleteImage(noticeNo);// 연결 테입르 정보 삭제     
+		noticeDao.deleteImage(noticeNo);    
 	}
-
+	}
 	//홈 배너와 이벤트게시물 연결
 	@GetMapping("/bannerList")
 	public List<BannerListVO> bannerList() {
