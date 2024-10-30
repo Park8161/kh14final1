@@ -92,12 +92,30 @@ public class QnaRestController {
 	}
 	
 	@PutMapping("/edit/{qnaNo}")//수정
-	public void update(@PathVariable int qnaNo, @RequestBody QnaDto qnaDto) {
-		boolean result = qnaDao.update(qnaDto);
-		if(result == false) {
-			throw new TargetNotFoundException();
+	public void update(
+			@RequestHeader("Authorization") String token,
+			@PathVariable int qnaNo,
+			@RequestBody QnaDto updatedQna) throws IllegalStateException, IOException {
+		// 토큰 변환
+	    MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(token));
+	    
+	    // DB에서 해당 답글 조회
+	    QnaDto qnaDto = qnaDao.selectOne(qnaNo);
+	    if (qnaDto == null) {
+	        throw new TargetNotFoundException("해당 글이 존재하지 않습니다.");
+	    }
+	    
+	    //작성자 확인
+		boolean isOwner = qnaDto.getQnaWriter().equals(claimVO.getMemberId());
+		if(!isOwner) {
+			throw new IllegalStateException("본인의 글만 수정할 수 있습니다.");
 		}
+		
+		
+	    qnaDto.setQnaContent(updatedQna.getQnaContent()); // 수정할 내용을 설정
+	    qnaDao.update(qnaDto); // 업데이트 메서드를 호출하여 수정
 	}
+	
 	
 	@DeleteMapping("/delete/{qnaNo}")//삭제
 	public void delete(@RequestHeader("Authorization") String token,
@@ -111,7 +129,7 @@ public class QnaRestController {
         }
 	    QnaDto qnaDto = qnaDao.selectOne(qnaNo);
 	    if(qnaDto == null) {
-			throw new TargetNotFoundException("");
+			throw new TargetNotFoundException("존재하지 않는 게시글");
 		}
 	    boolean isOwner =  qnaDto.getQnaWriter().equals(claimVO.getMemberId());
 	    if(isOwner) {
