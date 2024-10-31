@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.kh.fa.dto.ProductDto;
+import com.kh.fa.vo.HotListVO;
 import com.kh.fa.vo.ProductLikeListRequestVO;
 import com.kh.fa.vo.ProductListRequestVO;
 import com.kh.fa.vo.ProductListVO;
@@ -118,6 +119,11 @@ public class ProductDao {
 	// patch
 	public boolean patch(ProductDto productDto) {
 		return sqlSession.update("product.patch", productDto) > 0;
+	}
+
+	// 소분류 카테고리로 등록된 상품이 많은 순서 20위까지
+	public List<HotListVO> selectHotList() {
+		return sqlSession.selectList("product.hotList");
 	}
 	
 }
