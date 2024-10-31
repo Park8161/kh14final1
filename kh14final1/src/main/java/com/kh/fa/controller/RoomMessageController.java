@@ -49,14 +49,12 @@ public class RoomMessageController {
 		roomMemberDto.setRoomNo(roomNo);
 //		상대방 아이디
 		String anotherMember = roomDao.selectAnother(roomMemberDto);
-		System.out.println("anoterMember/roomMemssageController"+anotherMember);
 		
 		if(anotherMember != null) {
 			UnreadDto unreadDto = new UnreadDto();
 //			unread Dto에 roomNo, memberId, unread(count) 삽입
 			unreadDto.setMemberId(anotherMember);
 			unreadDto.setRoomNo(roomNo);
-			System.out.println("unreadDto/roomMemssageController: "+unreadDto);
 //			있으면 업데이트
 			if(unreadDao.selectOne(unreadDto) != null) {
 				unreadDao.update(unreadDto);

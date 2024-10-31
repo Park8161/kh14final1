@@ -1,5 +1,6 @@
 package com.kh.fa.dao;
 
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,4 +48,29 @@ public class RoomMessageDao {
 		return sqlSession.selectList("roomMessage.listMemberComplete", params);
 	}
 	
+	public void setIsRead(int roomNo, String memberId) {
+		Map<String, Object> params = new HashMap<>();
+		params.put("memberId", memberId);
+		params.put("roomNo", roomNo);
+		sqlSession.update("roomMessage.setIsRead", params);
+		System.out.println("세션 다녀왔니/roomMessageDao");
+	}
+	
+	//발신자 가져오는 메소드
+    public String findSender(int messageNo) {
+        return sqlSession.selectOne("roomMessage.findSender", messageNo);
+    }
+    //시간 가져오는 메소드
+    public Timestamp findTime(int messageNo) {
+        return sqlSession.selectOne("roomMessage.findTime", messageNo);
+    }
+    //파일 등록하는 메소드
+    public void addFile(RoomMessageDto roomMessageDto) {
+        sqlSession.insert("roomMessage.insertFile", roomMessageDto);
+    }
+    //메세지 번호 가져오는 메소드
+    public List<Integer> findRoomMessageNo (int roomNo) {
+        System.out.println("방번호 "+roomNo);
+        return sqlSession.selectList("roomMessage.findRoomMessageNo", roomNo);
+    }
 }

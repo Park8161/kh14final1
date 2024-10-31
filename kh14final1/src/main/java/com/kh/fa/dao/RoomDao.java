@@ -1,5 +1,6 @@
 package com.kh.fa.dao;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -57,8 +58,8 @@ public class RoomDao {
 //		    	없다면
 //		    	vo null exeption 발생 상대방이 나갔을 때 
 		    	RoomListVO vo = new RoomListVO();
-		    	vo.setMemberId("상대방이 퇴장했습니다");
 		    	vo = sqlSession.selectOne("room.selectRoomListVO", dto);	
+		    	vo.setMemberId("상대방이 퇴장했습니다");
 		    	if (vo != null) list.add(vo);
 		    }
 		}
@@ -121,21 +122,30 @@ public class RoomDao {
 	}
 	
 	// 채팅방 테이블과 첨부테이블을 연결
-	public void connect(int roomNo, int attachmentNo) {
-		Map<String, Object> params = new HashMap<>();
-		params.put("roomNo", roomNo);
-		params.put("attachmentNo", attachmentNo);
-		sqlSession.insert("room.connect", params);
-	}
-	
-	// 채팅방 이미지 찾기
-	public Integer findImage(int roomNo) {
-		return sqlSession.selectOne("room.findImage", roomNo);
-	}
-	
-	// 채팅방 이미지 찾기 - 여러 이미지를 가져오기
-	public List<Integer> findImages(int roomNo) {
-		return sqlSession.selectList("room.findImages", roomNo);
-	}
+    public void connect(int messageRoomNo, int attachmentNo) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("messageRoomNo", messageRoomNo);
+        params.put("attachmentNo", attachmentNo);
+        sqlSession.insert("room.connect", params);
+    }
+    
+    // 채팅방 이미지 찾기
+    public Integer findImage(int messageNo) {
+        return sqlSession.selectOne("room.findImage", messageNo);
+    }
+    
+    // 채팅방 이미지 찾기 - 여러 이미지를 가져오기
+    public Integer findImages(int messageNo) {
+        Integer imageNo = sqlSession.selectOne("room.findImages", messageNo);
+        if(imageNo == null) {
+            return 0;
+        }
+        return imageNo;
+    }
+    
+    //채팅방 시간 찾기
+    public Timestamp findTime(int image) {
+        return sqlSession.selectOne("room.findTime", image);
+    }
 	
 }

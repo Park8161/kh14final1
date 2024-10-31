@@ -416,4 +416,10 @@
 	<select id="selectMemberProduct" resultType="ProductDto">
 		SELECT * FROM product WHERE product_member = #{memberId}
 	</select>
+	
+	<!-- 회원 등급 조회 -->
+    <select id="memberLevel" resultType="String">
+        select member_level from member where member_id=#{memberId}
+    </select>
+    
 </mapper>

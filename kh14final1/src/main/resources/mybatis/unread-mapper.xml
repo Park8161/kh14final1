@@ -27,4 +27,7 @@
 	SELECT unread FROM unread WHERE room_no = #{roomNo} AND member_id=#{memberId}
 	</select>
 
+	<select id="countAll" resultType="int">
+	SELECT sum(unread) FROM unread WHERE member_id = #{memberId}
+	</select>
 </mapper>

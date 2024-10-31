@@ -1,8 +1,9 @@
 package com.kh.fa.restcontroller;
 
-import java.awt.print.Printable;
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,15 +22,18 @@ import org.springframework.web.multipart.MultipartFile;
 import com.kh.fa.dao.MemberDao;
 import com.kh.fa.dao.ProductDao;
 import com.kh.fa.dao.RoomDao;
+import com.kh.fa.dao.RoomMessageDao;
 import com.kh.fa.dao.UnreadDao;
 import com.kh.fa.dto.ProductDto;
 import com.kh.fa.dto.RoomDto;
 import com.kh.fa.dto.RoomMemberDto;
+import com.kh.fa.dto.RoomMessageDto;
 import com.kh.fa.dto.UnreadDto;
 import com.kh.fa.error.TargetNotFoundException;
 import com.kh.fa.service.AttachmentService;
 import com.kh.fa.service.TokenService;
 import com.kh.fa.vo.MemberClaimVO;
+import com.kh.fa.vo.RoomImageListVO;
 import com.kh.fa.vo.RoomListVO;
 import com.kh.fa.vo.WebSocketFileResponseVO;
 import com.kh.fa.vo.WebsocketFileRequestVO;
@@ -160,58 +164,132 @@ public class RoomRestController {
 		unreadDao.setZero(unreadDto);
 	}
 	
-	@GetMapping("/cntunread/{roomNo}")
-	public int getProductInfo(@RequestHeader("Authorization") String token, 
-			@PathVariable int roomNo) {
+	@GetMapping("/unread/cntall")
+	public int cntAll(@RequestHeader("Authorization") String token) {
 		MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(token));
-		UnreadDto unreadDto = new UnreadDto();
-		unreadDto.setMemberId(claimVO.getMemberId());
-		unreadDto.setRoomNo(roomNo);
-		return unreadDao.count(unreadDto);
+		return unreadDao.countAll(claimVO.getMemberId());
 	}
 	
-	// 이미지 전송하는 코드
-		@Autowired
-		AttachmentService attachmentService;
-		@Autowired
-		MemberDao memberDao;
-		@Autowired
-		private SimpMessagingTemplate messagingTemplate;
-		
-		@PostMapping("/fileSend/{roomNo}")
-		public void file(@PathVariable int roomNo,
-									@RequestHeader("Authorization") String token,
-									WebsocketFileRequestVO request
-									) throws IllegalStateException, IOException {
-			//토큰 변환
-			MemberClaimVO claimVo = tokenService.check(tokenService.removeBearer(token));
+	@PostMapping("/unread/cntall")
+	public int cntAllPost(@RequestHeader("Authorization") String token) {
+		MemberClaimVO claimVO = tokenService.check(tokenService.removeBearer(token));
+		return unreadDao.countAll(claimVO.getMemberId());
+	}
+	
+	//이미지 전송하는 코드, 전송 될때 등록함
+			@Autowired
+			AttachmentService attachmentService;
+			@Autowired
+			MemberDao memberDao;
+			@Autowired
+			RoomMessageDao roomMessageDao;
+			@Autowired
+			private SimpMessagingTemplate messagingTemplate;
 			
-			//이미지를 저장
-			for(MultipartFile attach : request.getAttachList()) {
-				if(attach.isEmpty()) continue;
-				int attachmentNo = attachmentService.save(attach);
-				roomDao.connect(roomNo, attachmentNo);
+			@PostMapping("/fileSend/{roomNo}")
+			public void file(@PathVariable int roomNo,
+										@RequestHeader("Authorization") String token,
+										WebsocketFileRequestVO request
+										) throws IllegalStateException, IOException {
+				//토큰 변환
+				MemberClaimVO claimVo = tokenService.check(tokenService.removeBearer(token));
+				
+				//룸 메세지 번호
+				int roomMessageNo = roomMessageDao.sequence();
+				
+				//DB저장
+				WebSocketFileResponseVO response = new WebSocketFileResponseVO();
+				
+				RoomMessageDto roomMessageDto = new RoomMessageDto();
+				roomMessageDto.setRoomMessageNo(roomMessageNo);
+				roomMessageDto.setRoomMessageType("file");
+				roomMessageDto.setRoomMessageSender(claimVo.getMemberId());
+				roomMessageDto.setRoomMessageReceiver(null);
+				roomMessageDto.setRoomMessageContent("파일");
+				roomMessageDto.setRoomNo(roomNo);
+				roomMessageDto.setRoomMessageTime(Timestamp.valueOf(LocalDateTime.now()));
+				roomMessageDao.insert(roomMessageDto);
+				
+				//이미지를 저장
+				for(MultipartFile attach : request.getAttachList()) {
+					if(attach.isEmpty()) continue;
+					int attachmentNo = attachmentService.save(attach);
+					roomDao.connect(roomMessageNo, attachmentNo);
+				}
+
+				//이미지를 찾아서
+				int image = roomDao.findImage(roomMessageNo);
+				
+				//보냄
+				response.setSenderMemberId(claimVo.getMemberId());
+				response.setSenderMemberLevel(claimVo.getMemberLevel());
+				response.setTime(LocalDateTime.now());
+				response.setImage(image);
+				 //전송
+				messagingTemplate.convertAndSend("/private/chat/"+roomNo+"/file", response);
+				System.out.println(response.getTime());
+			}
+	    
+	    // 이미지 목록
+		@GetMapping("/imageList/{roomNo}")
+		public void list( @PathVariable int roomNo) {
+			
+			//이미지 번호
+			List<Integer> images = new ArrayList<>();
+			// 메세지 묶음을 방번호를 넣어서 찾고
+			List<Integer> messages = roomMessageDao.findRoomMessageNo(roomNo);
+			
+			//메세지 번호 돌려서 보냄
+			List<RoomImageListVO> responseList = new ArrayList<>();
+			for(int messageNo : messages) {
+				int image = roomDao.findImages(messageNo);	
+				if(image == 0) {
+					continue;
+				}
+				
+				RoomImageListVO response = new RoomImageListVO();
+				//response.setSenderMemberLevel(claimVo.getMemberLevel());
+				response.setImage(image);
+				//DB 등록된 발신자 아이디 가져오기 
+				String memberId = roomMessageDao.findSender(messageNo);
+				//DB 등록된 시간 가져오기
+				Timestamp time = roomMessageDao.findTime(messageNo);
+				//회원 등급 조회
+				String memberLevel = memberDao.memberLevel(memberId);
+				response.setSenderMemberId(memberId);
+				response.setSenderMemberLevel(memberLevel);
+				response.setTime(time);			
+				responseList.add(response);
+//				System.out.println("발신자"+response.getSenderMemberId());
+//				System.out.println("시간"+response.getTime());
+//				System.out.println("등급"+response.getSenderMemberLevel());
+				
 			}
 			
-			//이미지를 찾아서
-			int image = roomDao.findImage(roomNo);
-			
-			//보냄
-			WebSocketFileResponseVO response = new WebSocketFileResponseVO();
-			response.setSenderMemberId(claimVo.getMemberId());
-			response.setSenderMemberLevel(claimVo.getMemberLevel());
-			response.setTime(LocalDateTime.now());
-			response.setImage(image);
-			
-			messagingTemplate.convertAndSend("/private/chat/"+roomNo+"/file", response);
-		}
+			//이미지 리스트
+			//List<RoomImageListVO> responseList = new ArrayList<>();
 		
-	// 이미지 로드 코드
-	@GetMapping("/imageList/{roomNo}")
-	public List<Integer> list(@PathVariable int roomNo) {
-		List<Integer> image = roomDao.findImages(roomNo);
-
-		return image;
-	}
+//			//이미지 번호 돌려서 각각 넣음
+//			for(int imageNo : images) {
+//					RoomImageListVO response = new RoomImageListVO();
+//					//response.setSenderMemberLevel(claimVo.getMemberLevel());
+//					response.setImage(imageNo);
+//					//db 등록된 발신자 아이디 가져오기 
+//					String memberId = roomMessageDao.findSender(imageNo);
+//					//db 등록된 시간 가져오기
+//					Timestamp time = roomMessageDao.findTime(imageNo);
+//					response.setSenderMemberId(memberId);
+//					response.setTime(time);			
+//					responseList.add(response);
+//					System.out.println("발신자"+response.getSenderMemberId());
+//					System.out.println("시간"+response.getTime());
+//					System.out.println("이미지번호"+imageNo);
+//				}
+			
+			System.out.println("파일목록업데이트");
+			//전송
+			messagingTemplate.convertAndSend("/private/chat/"+roomNo+"/fileList", responseList);
+		}
+			
 	
 }

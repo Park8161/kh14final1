@@ -1,5 +1,7 @@
 package com.kh.fa.dao;
 
+import java.util.HashMap;
+
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -18,17 +20,14 @@ public class UnreadDao {
 	}
 	
 	public void insert(UnreadDto unreadDto) {
-		System.out.println("insert/unreadDao 실행");
 		sqlSession.insert("unread.insert", unreadDto);
 	}
 	
 	public void update(UnreadDto unreadDto) {
-		System.out.println("update/unreadDao실행");
 		sqlSession.update("unread.update", unreadDto);
 	}
 	
 	public void setZero(UnreadDto unreadDto) {
-		System.out.println("setZero/unreadDao 실행");
 		sqlSession.update("unread.setZero", unreadDto);
 	}
 	
@@ -41,15 +40,17 @@ public class UnreadDao {
 		}
 	}
 
-	public int count(UnreadDto unreadDto) {
-		if(unreadDto == null) {
-			return 0;
-		}
-		else {
-			Integer result = sqlSession.selectOne("unread.count", unreadDto);
-			if(result == null) return 0;
-			else return result;
-		}
+	public int countAll(String memberId) {
+		Integer result = sqlSession.selectOne("unread.countAll", memberId);
+		if(result == null)return 0;
+		else return result;
 	}
-	
+
+//	public void setZero(String memberId, int roomNo) {
+//		UnreadDto unreadDto = new UnreadDto();
+//		System.out.println("setZero실행");
+//		unreadDto.setMemberId(memberId);
+//		unreadDto.setRoomNo(roomNo);
+//		sqlSession.update("unread.setZero", unreadDto);
+//	}
 }
