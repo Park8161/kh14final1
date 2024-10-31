@@ -155,5 +155,8 @@ public class MemberDao {
 		return sqlSession.selectOne("ban.selectBanCheck", memberId);
 	}
 	
+	public String memberLevel(String memberId) {
+        return sqlSession.selectOne("member.memberLevel",memberId);
+    }
 	
 }

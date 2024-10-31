@@ -16,7 +16,9 @@ import org.springframework.web.socket.messaging.SessionConnectEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 
+import com.kh.fa.dao.RoomDao;
 import com.kh.fa.dao.RoomMessageDao;
+import com.kh.fa.dao.UnreadDao;
 import com.kh.fa.dao.WebsocketMessageDao;
 import com.kh.fa.service.TokenService;
 import com.kh.fa.vo.MemberClaimVO;
@@ -38,6 +40,10 @@ public class WebSocketEventHandler {
 	private WebsocketMessageDao websocketMessageDao;
 	@Autowired
 	private RoomMessageDao roomMessageDao;
+	@Autowired 
+	private RoomDao roomDao;
+	@Autowired
+	private UnreadDao unreadDao;
 	
 	// 사용자 세션 정보 저장소 - HashMap은 non thread-safe 여서 사용 불가 >> thread-safe는 ConcurrentHashMap을 사용
 	// private Map<String, String> userList = new ConcurrentHashMap<>();
@@ -56,7 +62,7 @@ public class WebSocketEventHandler {
 		// 저장소에 사용자 등록
 		userList.put(sessionId, claimVO.getMemberId());
 		
-		log.info("사용자 접속 완료, 인원수 = {}, 세션 = {}, 아이디 = {}", userList.size(), sessionId, claimVO.getMemberId());
+//		log.info("사용자 접속 완료, 인원수 = {}, 세션 = {}, 아이디 = {}", userList.size(), sessionId, claimVO.getMemberId());
 	}
 	
 	@EventListener // 구독 이벤트
@@ -105,21 +111,21 @@ public class WebSocketEventHandler {
 			int slash = removeStr.indexOf("/");
 			int roomNo = Integer.parseInt(removeStr.substring(0, slash)); // 슬래시 앞부분
 			String memberId = removeStr.substring(slash+1); // 슬래시 뒷부분
-			
-			// 전달할 정보를 조회
+//			roomNo와 memberId를 통해서 안읽은 메시지(unread)를 0으로 업데이트
+//			unreadDao.setZero(memberId, roomNo);
 			List<WebsocketMessageVO> messageList = roomMessageDao.selectListMemberComplete(memberId, 1, 100, roomNo);
-			
 			WebSocketMessageMoreVO moreVO = new WebSocketMessageMoreVO();
 			moreVO.setMessageList(messageList);
 			moreVO.setLast(true);
 			if(messageList.size() > 0) { // 메세지가 존재한다면
-				List<WebsocketMessageVO> prevMessageList = roomMessageDao.selectListMemberComplete(memberId, 1, 100, messageList.get(0).getNo(), roomNo);
+				List<WebsocketMessageVO> prevMessageList 
+				= roomMessageDao.selectListMemberComplete(memberId, 1, 100, messageList.get(0).getNo(), roomNo);
 				moreVO.setLast(prevMessageList.isEmpty());
 			}
-			
 			// 전송
 			messagingTemplate.convertAndSend("/private/db/"+roomNo+"/"+memberId, moreVO);
 		}
+		
 	}
 	
 	
@@ -132,7 +138,7 @@ public class WebSocketEventHandler {
 		// 저장소에서 사용자 제거
 		userList.remove(sessionId);
 		
-		log.info("사용자 접속 종료, 인원수 = {}, 세션 = {}", userList.size(), sessionId);
+//		log.info("사용자 접속 종료, 인원수 = {}, 세션 = {}", userList.size(), sessionId);
 		
 		// 채널 /users에 전파
 		Set<String> values = new TreeSet<>(userList.values());

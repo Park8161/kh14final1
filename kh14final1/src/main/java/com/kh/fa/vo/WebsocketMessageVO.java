@@ -14,4 +14,5 @@ public class WebsocketMessageVO {
 	private String receiverMemberId; // 수신자
 	private String content; // 보낸 내용
 	private LocalDateTime time; // 발신 시각
+	private char isRead;
 }

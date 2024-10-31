@@ -12,5 +12,6 @@ public class RoomMessageDto {
 	private String roomMessageReceiver;
 	private String roomMessageContent;
 	private Timestamp roomMessageTime;
+	private char roomMessageRead;
 	private int roomNo;
 }
