@@ -121,6 +121,10 @@
 		update product set product_state = '판매완료' WHERE PRODUCT_NO = #{productNo}
 	</update>
 	
+	<update id="cancelBuy">
+		update product set product_state = '판매중' where product_no = #{productNo}
+	</update>
+	
 	<select id="selectPaymentImage" resultType="PaymentImageVO">
 		SELECT p.*, pi2.*
 		FROM payment p
