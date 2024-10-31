@@ -33,6 +33,7 @@ import com.kh.fa.error.TargetNotFoundException;
 import com.kh.fa.service.AttachmentService;
 import com.kh.fa.service.TokenService;
 import com.kh.fa.vo.CategoryNameVO;
+import com.kh.fa.vo.HotListVO;
 import com.kh.fa.vo.MemberClaimVO;
 import com.kh.fa.vo.ProductDetailResponseVO;
 import com.kh.fa.vo.ProductEditRequestVO;
@@ -289,6 +290,12 @@ public class ProductRestController {
 	@GetMapping("/list/{column}/{keyword}")
 	public List<ProductDto> list(@PathVariable String column, @PathVariable String keyword) {
 		return productDao.selectAdminList(column, keyword);
+	}
+	
+	// 소분류 카테고리로 등록된 상품이 많은 순서 20위까지
+	@GetMapping("/hotList")
+	public List<HotListVO> hotList() {
+		return productDao.selectHotList();
 	}
 	
 	// 패치매핑 : 판매 상태 교체
