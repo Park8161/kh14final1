@@ -72,8 +72,14 @@ public class PaymentDao {
 		return sqlSession.selectOne("payment.selectPaymentImage", productNo);
 	}
 
+	// 구매확정
 	public void confirmBuy(int productNo) {
 		sqlSession.update("payment.confirmBuy", productNo);
+	}
+	
+	// 구매취소
+	public void cancelBuy(int productNo) {
+		sqlSession.update("payment.cancelBuy", productNo);
 	}
 	
 }

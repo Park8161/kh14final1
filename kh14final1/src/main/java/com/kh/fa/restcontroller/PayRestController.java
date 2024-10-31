@@ -59,6 +59,9 @@ public class PayRestController {
 		if(productDao.selectOne(productNo).getProductState().equals("판매완료")
 				) {throw new TargetNotFoundException("이미 판매된 상품입니다");}
 		
+		if(productDao.selectOne(productNo).getProductState().equals("거래중")
+				) {throw new TargetNotFoundException("거래중인 상품입니다");}
+		
 		ProductDto productDto = productDao.selectOne(productNo);
 		
 		KakaoPayReadyRequestVO kkoRequest = new KakaoPayReadyRequestVO();

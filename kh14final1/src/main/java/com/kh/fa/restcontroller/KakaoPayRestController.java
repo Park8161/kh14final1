@@ -17,8 +17,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kh.fa.dao.PaymentDao;
+import com.kh.fa.dao.ProductDao;
 import com.kh.fa.dto.PaymentDetailDto;
 import com.kh.fa.dto.PaymentDto;
+import com.kh.fa.dto.ProductDto;
 import com.kh.fa.error.TargetNotFoundException;
 import com.kh.fa.service.KakaoPayService;
 import com.kh.fa.service.TokenService;
@@ -127,6 +129,10 @@ public class KakaoPayRestController {
 		paymentDao.cancelAll(paymentNo); // 될거면 한번에 다 되어야 함 >> Transactional
 		// [3] payment_detail 테이블의 관련항목의 상태를 취소로 변경
 		paymentDao.cancelAllItem(paymentNo); // 될거면 한번에 다 되어야 함 >> Transactional
+		
+		// 구매 취소함으로 인해 판매상태 다시 판매중으로 롤백
+		paymentDao.cancelBuy(paymentDto.getProductNo());
+		
 		return response;
 	}
 
