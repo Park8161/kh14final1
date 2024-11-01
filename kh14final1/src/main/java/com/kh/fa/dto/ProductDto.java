@@ -1,5 +1,7 @@
 package com.kh.fa.dto;
 
+import java.sql.Date;
+
 import lombok.Data;
 
 @Data
@@ -13,4 +15,5 @@ public class ProductDto {
 	private String productState;
 	private int productQty;
 	private int productLikes;
+	private Date productDate;
 }
