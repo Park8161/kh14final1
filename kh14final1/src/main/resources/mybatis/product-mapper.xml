@@ -52,6 +52,9 @@
   		<include refid="top-n-header"></include>
   		select P.*, I.attachment from product P 
   		left outer join product_image I on P.product_no = I.product 
+		left outer join category C3 on P.product_category = C3.category_no
+		left outer join category C2 on C2.category_no = C3.category_upper
+		left outer join category c1 on C1.category_no = C3.category_group
   		where 
 			I.attachment = (
   				select min(attachment) from product_image 
@@ -60,11 +63,21 @@
   			and product_state != '판매완료'
   			and product_state != '판매보류'
   		<if test="column !=null and keyword !=null">
+  			<if test="column.equals('category_name')">
+  			and instr(C1.${column} || C2.${column} || C3.${column}, #{keyword}) > 0
+  			</if>
+  			<if test="!column.equals('category_name')">
   			and instr(${column}, #{keyword}) > 0
+  			</if>
   		</if>
   		order by 
   		<if test="column !=null and keyword !=null">
-			${column} asc,
+			<if test="column.equals('category_name')">
+  			C1.${column} asc, C2.${column} asc, C3.${column} asc,
+  			</if>
+  			<if test="!column.equals('category_name')">
+  			${column} asc,
+  			</if>
   		</if>
   		product_no desc
   		<include refid="top-n-footer"></include>
@@ -72,14 +85,30 @@
   	
   	<!-- 목록 카운트 -->
   	<select id="count" resultType="int">
-  		select count(*) from product
-  		where product_state != '판매완료'
+  		select count(*) from product P
+  		left outer join product_image I on P.product_no = I.product 
+		left outer join category C3 on P.product_category = C3.category_no
+		left outer join category C2 on C2.category_no = C3.category_upper
+		left outer join category c1 on C1.category_no = C3.category_group
+  		where 
+  			product_state != '판매완료'
+  			and product_state != '판매보류'
   		<if test="column !=null and keyword !=null">
+  			<if test="column.equals('category_name')">
+  			and instr(C1.${column} || C2.${column} || C3.${column}, #{keyword}) > 0
+  			</if>
+  			<if test="!column.equals('category_name')">
   			and instr(${column}, #{keyword}) > 0
+  			</if>
   		</if>
   		order by 
   		<if test="column !=null and keyword !=null">
-			${column} asc,
+			<if test="column.equals('category_name')">
+  			C1.${column} asc, C2.${column} asc, C3.${column} asc,
+  			</if>
+  			<if test="!column.equals('category_name')">
+  			${column} asc,
+  			</if>
   		</if>
   		product_no desc
   	</select>
