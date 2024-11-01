@@ -27,6 +27,14 @@ public class RoomMessageDao {
 	}
 	
 	// 최초 입장 시 전달할 메세지 조회
+	public List<WebsocketMessageVO> selectList(String memberId, int roomNo){
+		Map<String, Object> params = new HashMap<>();
+		params.put("memberId", memberId);
+		params.put("roomNo", roomNo);
+		return sqlSession.selectList("roomMessage.list", params);
+	}
+	
+	// 최초 입장 시 전달할 메세지 조회
 	public List<WebsocketMessageVO> selectListMemberComplete(String memberId, int beginRow, int endRow, int roomNo){
 		// Map<String, Object> params = Map.of("memberId", memberId, "beginRow", beginRow, "endRow", endRow);
 		Map<String, Object> params = new HashMap<>();
