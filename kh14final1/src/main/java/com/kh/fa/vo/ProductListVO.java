@@ -1,5 +1,7 @@
 package com.kh.fa.vo;
 
+import java.sql.Date;
+
 import lombok.Data;
 
 @Data
@@ -13,5 +15,6 @@ public class ProductListVO {
 	private String productState;
 	private int productQty;
 	private int productLikes;
+	private Date productDate;
 	private Integer attachment;
 }
