@@ -24,6 +24,30 @@
 		)
 	</insert>
 	
+	<select id="list" resultType="websocketMessageVO">
+		select 
+			RM.room_message_no "no", 
+			RM.room_message_type "type", 
+			RM.room_message_sender "sender_member_id", 
+			M.member_level "sender_member_level", 
+			RM.room_message_receiver "receiver_member_id", 
+			RM.room_message_content "content", 
+			RM.room_message_time "time", 
+			RM.room_message_read "isRead"   
+		from room_message RM 
+			left outer join member M 
+				on RM.room_message_sender = M.member_id 
+		where 
+			room_no = #{roomNo} 
+			and 
+			(
+				RM.room_message_type = 'chat' 
+				or 
+				RM.room_message_type = 'system' 
+			) 
+		order by "no" ASC
+	</select>
+	
 	<!-- react에 보내기 쉽게 조회 -->
 	<select id="listMemberComplete" resultType="websocketMessageVO">
 		<include refid="top-n-header"></include>

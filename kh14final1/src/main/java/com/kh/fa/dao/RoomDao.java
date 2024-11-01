@@ -51,16 +51,19 @@ public class RoomDao {
 //		    	나 이외의 참여자가 있다면 
 		    	RoomListVO vo = sqlSession.selectOne("room.selectRoomListVO2", dto);   
 		    	int unreadCnt = unreadDao.count(dto);
-		    	vo.setUnreadCnt(unreadCnt);
-		    	if (vo != null) list.add(vo);
+		    	if (vo != null) {
+		    		vo.setUnreadCnt(unreadCnt);
+		    		list.add(vo);
+		    		}
 		    }
 		    else {
 //		    	없다면
-//		    	vo null exeption 발생 상대방이 나갔을 때 
 		    	RoomListVO vo = new RoomListVO();
 		    	vo = sqlSession.selectOne("room.selectRoomListVO", dto);	
-		    	vo.setMemberId("상대방이 퇴장했습니다");
-		    	if (vo != null) list.add(vo);
+		    	if (vo != null) {		    		
+		    		vo.setMemberId("상대방이 퇴장했습니다.");
+		    		list.add(vo);
+		    	}
 		    }
 		}
 

@@ -133,6 +133,7 @@ public class RoomRestController {
 		roomDao.leave(roomMemberDto); // 퇴장
 	}
 	
+//	채팅방 진입 가능여부 판단
 	@GetMapping("/check/{roomNo}")
 	public boolean check(@RequestHeader("Authorization") String token, @PathVariable int roomNo) {
 		// 토큰 해석
@@ -151,6 +152,7 @@ public class RoomRestController {
 	public ProductDto getProductInfo(@PathVariable int roomNo) {
 //		roomNo -> productNo -> productInfo
 		ProductDto productDto = roomDao.getProductInfo(roomNo);
+		if(productDto == null) return null;
 		return productDto;
 	}
 	
@@ -163,6 +165,8 @@ public class RoomRestController {
 		unreadDto.setRoomNo(roomNo);
 		unreadDao.setZero(unreadDto);
 	}
+	
+	
 	
 	@GetMapping("/unread/cntall")
 	public int cntAll(@RequestHeader("Authorization") String token) {
@@ -290,6 +294,5 @@ public class RoomRestController {
 			//전송
 			messagingTemplate.convertAndSend("/private/chat/"+roomNo+"/fileList", responseList);
 		}
-			
-	
+
 }

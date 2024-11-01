@@ -113,17 +113,17 @@ public class WebSocketEventHandler {
 			String memberId = removeStr.substring(slash+1); // 슬래시 뒷부분
 //			roomNo와 memberId를 통해서 안읽은 메시지(unread)를 0으로 업데이트
 //			unreadDao.setZero(memberId, roomNo);
-			List<WebsocketMessageVO> messageList = roomMessageDao.selectListMemberComplete(memberId, 1, 100, roomNo);
-			WebSocketMessageMoreVO moreVO = new WebSocketMessageMoreVO();
-			moreVO.setMessageList(messageList);
-			moreVO.setLast(true);
-			if(messageList.size() > 0) { // 메세지가 존재한다면
-				List<WebsocketMessageVO> prevMessageList 
-				= roomMessageDao.selectListMemberComplete(memberId, 1, 100, messageList.get(0).getNo(), roomNo);
-				moreVO.setLast(prevMessageList.isEmpty());
-			}
+			List<WebsocketMessageVO> messageList = roomMessageDao.selectList(memberId, roomNo);
+//			WebSocketMessageMoreVO moreVO = new WebSocketMessageMoreVO();
+//			moreVO.setMessageList(messageList);
+//			moreVO.setLast(true);
+//			if(messageList.size() > 0) { // 메세지가 존재한다면
+//				List<WebsocketMessageVO> prevMessageList 
+//				= roomMessageDao.selectListMemberComplete(memberId, 1, 100, messageList.get(0).getNo(), roomNo);
+//				moreVO.setLast(prevMessageList.isEmpty());
+//			}
 			// 전송
-			messagingTemplate.convertAndSend("/private/db/"+roomNo+"/"+memberId, moreVO);
+			messagingTemplate.convertAndSend("/private/db/"+roomNo+"/"+memberId, messageList);
 		}
 		
 	}
