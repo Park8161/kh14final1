@@ -61,7 +61,7 @@ public class RoomMessageDao {
 		params.put("memberId", memberId);
 		params.put("roomNo", roomNo);
 		sqlSession.update("roomMessage.setIsRead", params);
-		System.out.println("세션 다녀왔니/roomMessageDao");
+//		System.out.println("세션 다녀왔니/roomMessageDao");
 	}
 	
 	//발신자 가져오는 메소드
@@ -78,7 +78,7 @@ public class RoomMessageDao {
     }
     //메세지 번호 가져오는 메소드
     public List<Integer> findRoomMessageNo (int roomNo) {
-        System.out.println("방번호 "+roomNo);
+//        System.out.println("방번호 "+roomNo);
         return sqlSession.selectList("roomMessage.findRoomMessageNo", roomNo);
     }
 }

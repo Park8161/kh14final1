@@ -214,7 +214,6 @@ public class ProductRestController {
 		
 		List<Integer> list = productDao.findImages(productNo);
 		for(int i=0; i<list.size(); i++) {
-			System.out.println("지워지는번호 : "+list.get(i));
 			attachmentService.delete(list.get(i));
 		}
 		
