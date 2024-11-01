@@ -21,12 +21,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.kh.fa.dao.AttachmentDao;
 import com.kh.fa.dao.CategoryDao;
 import com.kh.fa.dao.MemberDao;
 import com.kh.fa.dao.ProductDao;
 import com.kh.fa.dao.ProductLikeDao;
-import com.kh.fa.dto.AttachmentDto;
 import com.kh.fa.dto.MemberDto;
 import com.kh.fa.dto.ProductDto;
 import com.kh.fa.error.TargetNotFoundException;
@@ -106,7 +104,6 @@ public class ProductRestController {
 		responseVO.setProductList(productDao.selectListByPaging(requestVO));
 		responseVO.setCount(count);
 		responseVO.setLast(last);
-		
 		return responseVO;
 	}
 

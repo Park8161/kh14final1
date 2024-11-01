@@ -231,7 +231,7 @@ public class RoomRestController {
 				response.setImage(image);
 				 //전송
 				messagingTemplate.convertAndSend("/private/chat/"+roomNo+"/file", response);
-				System.out.println(response.getTime());
+				//System.out.println(response.getTime());
 			}
 	    
 	    // 이미지 목록
@@ -290,7 +290,7 @@ public class RoomRestController {
 //					System.out.println("이미지번호"+imageNo);
 //				}
 			
-			System.out.println("파일목록업데이트");
+			//System.out.println("파일목록업데이트");
 			//전송
 			messagingTemplate.convertAndSend("/private/chat/"+roomNo+"/fileList", responseList);
 		}

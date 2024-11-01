@@ -1,6 +1,6 @@
 package com.kh.fa.vo;
 
-import java.sql.Date;
+import java.sql.Timestamp;
 
 import lombok.Data;
 
@@ -15,6 +15,6 @@ public class ProductListVO {
 	private String productState;
 	private int productQty;
 	private int productLikes;
-	private Date productDate;
+	private Timestamp productDate;
 	private Integer attachment;
 }
