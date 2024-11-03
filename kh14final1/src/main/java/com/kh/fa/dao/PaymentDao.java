@@ -81,5 +81,10 @@ public class PaymentDao {
 	public void cancelBuy(int productNo) {
 		sqlSession.update("payment.cancelBuy", productNo);
 	}
+
+//	거래횟수 조회
+	public int countPayment(String memberId) {
+	return sqlSession.selectOne("payment.countPayment",memberId);
+	}
 	
 }

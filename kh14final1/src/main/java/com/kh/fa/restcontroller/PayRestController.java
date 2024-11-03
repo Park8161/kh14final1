@@ -152,4 +152,10 @@ public class PayRestController {
 		paymentDao.confirmBuy(paymentNo);
 	}
 	
+//	거래횟수 카운트 
+	@GetMapping("/count/{memberId}")
+	public int countPayment(@PathVariable String memberId) {
+		return paymentDao.countPayment(memberId);
+	}
+	
 }
