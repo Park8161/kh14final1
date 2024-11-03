@@ -144,4 +144,9 @@
 	<update id="confirmBuy">
 		update payment SET PAYMENT_STATUS ='확정' WHERE payment_no = #{paymentNo}
 	</update>
+	
+	<select id="countPayment" resultType="int">
+		SELECT count(*) FROM payment
+		WHERE #{memberId} IN (payment_buyer, payment_seller)
+	</select>
 </mapper>
