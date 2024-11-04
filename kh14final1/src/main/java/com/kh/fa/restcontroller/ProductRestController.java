@@ -104,6 +104,10 @@ public class ProductRestController {
 		responseVO.setProductList(productDao.selectListByPaging(requestVO));
 		responseVO.setCount(count);
 		responseVO.setLast(last);
+		//최신, 좋아요, 랜덤
+		responseVO.setRecentPd(productDao.recentPd());
+		responseVO.setLikePd(productDao.likePd());
+		responseVO.setRandomProduct(productDao.randomProduct());
 		return responseVO;
 	}
 
