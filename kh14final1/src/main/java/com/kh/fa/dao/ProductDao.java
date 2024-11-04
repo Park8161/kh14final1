@@ -130,4 +130,16 @@ public class ProductDao {
 	public String checkState(int productNo) {
 		return sqlSession.selectOne("product.checkState", productNo);
 	}
+	// 상품 최신 등록 조회
+	public List<ProductListVO>  recentPd() {
+		 return sqlSession.selectList("product.recentPd");
+	}
+	// 상품 좋아요 순
+	public List<ProductListVO>  likePd() {
+		 return sqlSession.selectList("product.likePd");
+	}
+	// 상품 랜덤으로 보여줌
+	public List<ProductListVO> randomProduct() {
+		return sqlSession.selectList("product.randomProduct");
+	}
 }

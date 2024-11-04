@@ -282,7 +282,52 @@
 			) TMP
 			) where rn between #{beginRow} and #{endRow}
 		</if>
-	</sql> 	
+	</sql> 
+	
+	<!-- 최신 등록순 -->
+  	<select id="recentPd" resultType="productListVO">
+  	<![CDATA[
+		select * from (
+			select p.*, a.attachment
+			from product p
+			left join product_image a on p.product_no = a.product
+			where p.product_state in ('판매중')
+			order by p.product_date desc
+		)
+		where rownum <= 12
+  		]]>
+  	</select>
   	
+  	<!-- 좋아요 순 -->
+  	<select id="likePd" resultType="productListVO">
+  	<![CDATA[
+  	 select * from (
+			select p.*, a.attachment
+			from product p
+			left join product_image a on p.product_no = a.product
+			order by p.product_likes desc
+		)
+		where rownum <= 12
+  		]]>
+  	</select>
+  	
+  	<!-- 랜덤으로 상품 보여줌 -->
+  	<select id="randomProduct" resultType="productListVO">
+  	<![CDATA[
+		select *
+		from (
+		    select p.*, 
+		           (select a.attachment
+		            from product_image a
+		            where a.product = p.product_no
+		            and rownum = 1) as attachment
+		    from product p
+		    where product_date >= sysdate - 10
+		    and p.product_state = '판매중'
+		    order by dbms_random.value
+		)
+		where rownum <= 6
+  	]]>
+  	</select>
  </mapper>
   	
