@@ -303,4 +303,11 @@ public class ProductRestController {
 		productDao.patch(productDto);
 	}
 	
+//	상품 판매 현황 조회
+	@GetMapping("/checkState/{productNo}")
+	public String checkState(@PathVariable int productNo) {
+		if(productDao.selectOne(productNo) == null) 
+			throw new TargetNotFoundException("상품이 존재하지 않습니다.");
+		return productDao.checkState(productNo);
+	}
 }

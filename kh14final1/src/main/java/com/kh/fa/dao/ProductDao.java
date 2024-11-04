@@ -126,4 +126,8 @@ public class ProductDao {
 		return sqlSession.selectList("product.hotList");
 	}
 	
+	//상품 판매상태를 확인
+	public String checkState(int productNo) {
+		return sqlSession.selectOne("product.checkState", productNo);
+	}
 }
