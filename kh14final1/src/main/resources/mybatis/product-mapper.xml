@@ -263,6 +263,11 @@
 		) where rn between 1 and 20
   	</select>
   	
+  	<!-- 상품 판매 상태 확인-->
+  	<select id="checkState" resultType="String">
+		SELECT product_state FROM product WHERE product_no = #{productNo}
+  	</select>
+  	
   	<!-- 자주 사용하는(ex : Top N Query (페이징)) 구문들을 보관해두고서 불러서 사용 - 구문의 조각은 <sql> 
 		태그로 작성 - 이 구문을 불러올 때는 <include>로 작성 - beginRow와 endRow가 있을 때만 구동되도록 설정 : 
 		유연하게 처리 -->
