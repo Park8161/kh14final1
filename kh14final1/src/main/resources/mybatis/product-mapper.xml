@@ -292,6 +292,11 @@
 			from product p
 			left join product_image a on p.product_no = a.product
 			where p.product_state in ('판매중')
+			and 
+            a.attachment = (
+                  select min(attachment) from product_image 
+                  where product = p.product_no
+              )
 			order by p.product_date desc
 		)
 		where rownum <= 12
@@ -305,6 +310,12 @@
 			select p.*, a.attachment
 			from product p
 			left join product_image a on p.product_no = a.product
+			where p.product_state in ('판매중')
+			and 
+            a.attachment = (
+                  select min(attachment) from product_image 
+                  where product = p.product_no
+              )
 			order by p.product_likes desc
 		)
 		where rownum <= 12
@@ -323,7 +334,7 @@
 		            and rownum = 1) as attachment
 		    from product p
 		    where product_date >= sysdate - 10
-		    and p.product_state = '판매중'
+		    and p.product_state in ('판매중')
 		    order by dbms_random.value
 		)
 		where rownum <= 6
