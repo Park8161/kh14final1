@@ -85,7 +85,7 @@ public class ReviewRestController {
 		
 		String column = null; // 경로변수 대입 시 삭제 필수
 		String keyword = null; // 경로변수 대입 시 삭제 필수
-		return reviewDao.selectList(claimVO.getMemberId(), column, keyword);
+		return reviewDao.selectMyList(claimVO.getMemberId(), column, keyword);
 	}
 	
 	// 리뷰 개수 카운트
