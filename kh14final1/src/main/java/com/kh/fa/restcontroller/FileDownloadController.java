@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +16,7 @@ import com.kh.fa.dao.AttachmentDao;
 import com.kh.fa.service.AttachmentService;
 
 // 사용자에게 파일을 전송하는 컨트롤러
+@CrossOrigin
 @RestController // 이 컨트롤러는 화면이 아니라 데이터를 사용자에게 보낸다
 @RequestMapping("/attach")
 public class FileDownloadController {

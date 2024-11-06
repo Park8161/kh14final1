@@ -32,8 +32,8 @@ import com.kh.fa.vo.pay.KakaoPayApproveResponseVO;
 import com.kh.fa.vo.pay.KakaoPayReadyRequestVO;
 import com.kh.fa.vo.pay.KakaoPayReadyResponseVO;
 
-@RestController
 @CrossOrigin
+@RestController
 @RequestMapping("/pay")
 public class PayRestController {
 	

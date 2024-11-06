@@ -25,9 +25,7 @@ import com.kh.fa.error.TargetNotFoundException;
 import com.kh.fa.service.TokenService;
 import com.kh.fa.vo.MemberClaimVO;
 
-import io.swagger.v3.oas.annotations.Parameter;
-
-@CrossOrigin(origins = {"http://localhost:3000"})
+@CrossOrigin
 @RestController
 @RequestMapping("/qna/reply")
 public class ReplyRestController {

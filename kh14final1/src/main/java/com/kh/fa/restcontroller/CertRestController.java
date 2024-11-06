@@ -19,7 +19,7 @@ import jakarta.mail.MessagingException;
 
 @RestController
 @RequestMapping("/cert")
-@CrossOrigin(origins = {"http://localhost:3000"})
+@CrossOrigin
 public class CertRestController {
 	
 	@Autowired

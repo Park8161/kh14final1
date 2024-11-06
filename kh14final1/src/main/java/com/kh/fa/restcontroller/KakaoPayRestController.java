@@ -1,7 +1,6 @@
 package com.kh.fa.restcontroller;
 
 import java.net.URISyntaxException;
-import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,15 +16,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kh.fa.dao.PaymentDao;
-import com.kh.fa.dao.ProductDao;
-import com.kh.fa.dto.PaymentDetailDto;
 import com.kh.fa.dto.PaymentDto;
-import com.kh.fa.dto.ProductDto;
 import com.kh.fa.error.TargetNotFoundException;
 import com.kh.fa.service.KakaoPayService;
 import com.kh.fa.service.TokenService;
 import com.kh.fa.vo.MemberClaimVO;
-import com.kh.fa.vo.PaymentInfoVO;
 import com.kh.fa.vo.pay.KakaoPayApproveRequestVO;
 import com.kh.fa.vo.pay.KakaoPayApproveResponseVO;
 import com.kh.fa.vo.pay.KakaoPayCancelRequestVO;
@@ -37,7 +32,7 @@ import com.kh.fa.vo.pay.KakaoPayReadyResponseVO;
 
 @RestController
 @RequestMapping("/kakaopay")
-@CrossOrigin(origins = {"http://localhost:3000"}) // CORS 해제 설정
+@CrossOrigin // CORS 해제 설정
 public class KakaoPayRestController {
 	
 	@Autowired

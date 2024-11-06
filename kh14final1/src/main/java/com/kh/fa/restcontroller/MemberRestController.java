@@ -1,7 +1,6 @@
 package com.kh.fa.restcontroller;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +27,6 @@ import com.kh.fa.dto.BlockDto;
 import com.kh.fa.dto.CertDto;
 import com.kh.fa.dto.MemberDto;
 import com.kh.fa.dto.MemberTokenDto;
-import com.kh.fa.dto.ProductDto;
 import com.kh.fa.error.TargetNotFoundException;
 import com.kh.fa.service.EmailService;
 import com.kh.fa.service.TokenService;
@@ -38,7 +36,6 @@ import com.kh.fa.vo.MemberChangePwVO;
 import com.kh.fa.vo.MemberClaimVO;
 import com.kh.fa.vo.MemberComplexRequestVO;
 import com.kh.fa.vo.MemberComplexResponseVO;
-import com.kh.fa.vo.MemberDetailVO;
 import com.kh.fa.vo.MemberExitRequestVO;
 import com.kh.fa.vo.MemberFindPwVO;
 import com.kh.fa.vo.MemberLoginRequestVO;
@@ -49,7 +46,7 @@ import jakarta.mail.MessagingException;
 
 @RestController
 @RequestMapping("/member")
-@CrossOrigin(origins = {"http://localhost:3000"}) // CORS 해제 설정
+@CrossOrigin // CORS 해제 설정
 public class MemberRestController {
 
 	@Autowired

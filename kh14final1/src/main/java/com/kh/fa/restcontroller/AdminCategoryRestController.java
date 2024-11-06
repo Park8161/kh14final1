@@ -18,7 +18,7 @@ import com.kh.fa.error.TargetNotFoundException;
 import com.kh.fa.vo.CategoryListRequestVO;
 import com.kh.fa.vo.CategoryListResponsVO;
 
-@CrossOrigin(origins = {"http://localhost:3000"})
+@CrossOrigin
 @RestController
 @RequestMapping("/admin/category")
 public class AdminCategoryRestController {
