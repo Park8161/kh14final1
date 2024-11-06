@@ -42,7 +42,7 @@ public class ReviewDao {
 		params.put("memberId", memberId);
 		params.put("column", column);
 		params.put("keyword", keyword);
-		return sqlSession.selectList("review.mylist", params);
+		return sqlSession.selectList("review.myList", params);
 	}
 	
 	// 상세
