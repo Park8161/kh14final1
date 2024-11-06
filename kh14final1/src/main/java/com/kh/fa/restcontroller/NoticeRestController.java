@@ -1,6 +1,5 @@
 package com.kh.fa.restcontroller;
 
-
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
@@ -35,7 +34,7 @@ import com.kh.fa.vo.NoticeInsertImageRequestVO;
 
 import io.swagger.v3.oas.annotations.Parameter;
 
-@CrossOrigin(origins = {"http://localhost:3000"})
+@CrossOrigin
 @RestController
 @RequestMapping("/notice")
 public class NoticeRestController {

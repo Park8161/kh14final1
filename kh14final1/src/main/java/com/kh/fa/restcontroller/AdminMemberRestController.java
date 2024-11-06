@@ -26,7 +26,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 
 @RestController
 @RequestMapping("/admin/member")
-@CrossOrigin(origins = {"http://localhost:3000"})
+@CrossOrigin
 public class AdminMemberRestController {
 	
 	@Autowired
