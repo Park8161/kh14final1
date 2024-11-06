@@ -68,7 +68,7 @@ public class AdminMemberRestController {
 		@PutMapping("/edit")
 		public void update(@RequestBody MemberDto memberDto) {
 	// 수정 후 적용여부를 이용하여 404 처리
-			boolean result = memberDao.update(memberDto);
+			boolean result = memberDao.updateMemberByAdmin(memberDto);
 			if(result == false) {
 				throw new TargetNotFoundException();
 			}
