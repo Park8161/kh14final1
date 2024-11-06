@@ -397,7 +397,7 @@ public class MemberRestController {
 	@GetMapping("/banCheck/{memberId}")
 	public ResponseEntity<Boolean> banCheck(@PathVariable String memberId) {
 		BanDto banDto = memberDao.selectBanCheck(memberId);
-		
+//		System.out.println(banDto);
 		return ResponseEntity.ok(banDto != null && "차단".equals(banDto.getBanType()));
 	}
 	

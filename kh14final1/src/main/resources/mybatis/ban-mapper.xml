@@ -21,20 +21,19 @@
   			ban_no, ban_type, ban_memo, ban_time, ban_target
   		)
   		values(
-  			ban_seq.nextval, '차단', #{banMemo}, sysdate, #{banTarget}
+  			ban_seq.nextval, '해제', #{banMemo}, sysdate, #{banTarget}
   		)
   	</insert>
   	
-  	<!-- 차단 조회 -->
-  	<select id="selectBanCheck" resultType="com.kh.fa.dto.BanDto">
-        SELECT *
+  	<!-- 차단 조회: 가장 최근의 차단 기록 조회 -->
+  	<select id="selectBanCheck" resultType="com.kh.fa.dto.BanDto">    
+SELECT * 
         FROM (
-            SELECT *
-            FROM ban B
-            WHERE B.ban_target = #{memberId}
-            AND B.ban_type = '차단'
-            AND SYSDATE >= B.ban_time
-            ORDER BY B.ban_no DESC
+            SELECT * 
+            FROM ban B 
+            WHERE B.ban_target = #{memberId} 
+            AND SYSDATE >= B.ban_time 
+            ORDER BY B.ban_no DESC 
         ) 
         WHERE ROWNUM = 1
     </select>
